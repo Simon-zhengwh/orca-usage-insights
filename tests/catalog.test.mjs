@@ -168,6 +168,14 @@ test('the catalog re-exports the band and id helpers unchanged', () => {
   assert.equal(catalog.normalizeModelId, sources.normalizeModelId);
 });
 
+test('a maker model bills cache writes at its one default rate', () => {
+  const built = buildCatalog(BUNDLED);
+  assert.ok(Math.abs(requestCost({ model: 'kimi-k3.1-pro', input: 0, output: 0, cacheRead: 0, cacheWrite: 1_000_000 }, built) - 2) < 1e-9);
+  assert.ok(Math.abs(requestCost({ model: 'deepseek-flash', input: 1_000_000, output: 0, cacheRead: 0, cacheWrite: 0 }, built) - 0.15) < 1e-9);
+  // A maker that lists no cache-write rate charges nothing for it, so a write still prices.
+  assert.equal(requestCost({ model: 'deepseek-flash', input: 0, output: 0, cacheRead: 0, cacheWrite: 1_000_000 }, built), 0);
+});
+
 test('a record without cacheWrite1h prices every cache write at the 5-minute rate', () => {
   const built = buildCatalog(BUNDLED);
   assert.ok(Math.abs(requestCost({ model: 'claude-opus-5-5', input: 0, output: 0, cacheRead: 0, cacheWrite: 1_000_000 }, built) - 5) < 1e-9);

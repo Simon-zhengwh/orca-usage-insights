@@ -8,7 +8,16 @@ export { normalizeModelId } from './price-sources.mjs';
 
 // How each price vendor bills cache writes. 'split' prices 5-minute and 1-hour writes apart (Anthropic);
 // 'single' bills every write at the entry's one `default` rate. A new vendor is added here with its rule.
-const CACHE_WRITES = Object.freeze({ anthropic: 'split', openai: 'single', opencode: 'single', 'opencode-go': 'single' });
+const CACHE_WRITES = Object.freeze({
+  anthropic: 'split',
+  openai: 'single',
+  opencode: 'single',
+  'opencode-go': 'single',
+  deepseek: 'single',
+  zai: 'single',
+  moonshotai: 'single',
+  volcengine: 'single',
+});
 const PROVIDERS = Object.keys(CACHE_WRITES);
 const SOURCES = ['litellm', 'manual', 'user'];
 const ENTRY_FIELDS = ['provider', 'aliases', 'input', 'output', 'cacheRead', 'cacheWrite', 'tiers', 'contextWindow', 'source', 'asOf'];

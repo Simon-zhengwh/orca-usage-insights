@@ -488,7 +488,7 @@ test('unpricedModels lists unpriced models by tokens, ties by name, in range onl
 test('prices names the default catalog version and its newest price date', () => {
   const r = build([]);
   assert.match(r.prices.version, /^[0-9a-f]{8}$/);
-  assert.equal(r.prices.asOf, '2026-11-18');
+  assert.equal(r.prices.asOf, '2026-11-25');
 });
 
 test('a catalog option prices every record and the report names that catalog', () => {

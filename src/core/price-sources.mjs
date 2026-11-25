@@ -4,9 +4,13 @@
 import { PROMPT_BANDS } from './bands.mjs';
 
 const PROVIDERS = ['anthropic', 'openai', 'opencode', 'opencode-go'];
+// The makers of the models people run through their own gateways (DeepSeek, Z.ai, Moonshot, Volcengine).
+// Their ids carry no vendor prefix and are bundled from models.dev only, so one id keeps one price.
+const MAKERS = ['deepseek', 'zai', 'moonshotai', 'volcengine'];
 // OpenCode prices depend on the channel (Console or Go) and share model ids, so their catalog ids are
 // qualified. Only these providers use the "no rate listed means no charge" rule below.
 const CHANNELS = new Set(['opencode', 'opencode-go']);
+const MAKER_SET = new Set(MAKERS);
 const PREFIX = /^(anthropic\/|openai\/|us\.anthropic\.|eu\.anthropic\.|anthropic\.)/;
 const SUFFIX = /(\[1m\]|-v\d+:\d+|@\d{8}|-\d{8})$/;
 const DATED = /^(.*)-\d{8}$/;
@@ -40,6 +44,7 @@ export function today(now = new Date()) {
 }
 
 export function inBundleScope(entry) {
+  if (MAKER_SET.has(entry.provider)) return true;
   return entry.provider === 'anthropic' || (entry.provider === 'openai' && /^gpt-(5\.6|6)/.test(entry.id));
 }
 
@@ -73,12 +78,20 @@ export function parseLiteLLM(json, { ids, asOf = today(), source = 'litellm' } =
 // The 1-hour write rate is not in models.dev, so anthropic entries get a `5m` write only.
 // OpenCode entries are qualified by channel. Its list omits a cache rate when the channel charges
 // nothing for it, so those default to 0, the same rule OpenCode uses to price a request.
-export function parseModelsDev(json, { ids, asOf = today(), source = 'manual', providers = PROVIDERS } = {}) {
+// A maker's own list can leave the cache-write rate out (DeepSeek bills a fresh input token once,
+// there is no separate write fee), so there a missing write is 0 while a missing read stays a gap.
+export function parseModelsDev(json, {
+  ids,
+  asOf = today(),
+  source = 'manual',
+  providers = [...PROVIDERS, ...MAKERS],
+} = {}) {
   const wanted = wantedSet(ids);
   const entries = [];
   const errors = [];
   for (const provider of providers) {
     const channel = CHANNELS.has(provider);
+    const fillWrite = channel || MAKER_SET.has(provider);
     for (const [rawId, model] of Object.entries(json?.[provider]?.models ?? {})) {
       const id = channel ? `${provider}/${rawId}` : rawId;
       if (wanted && !wanted.has(normalizeModelId(id))) continue;
@@ -86,7 +99,7 @@ export function parseModelsDev(json, { ids, asOf = today(), source = 'manual', p
         errors.push({ id, provider, reason: 'no cost' });
         continue;
       }
-      const cost = readModelsDev(model.cost, { fillCache: channel });
+      const cost = readModelsDev(model.cost, { fillCache: channel, fillWrite });
       collect(build({ id, provider, ...cost, source, asOf }), { id, provider }, entries, errors);
     }
   }
@@ -126,7 +139,7 @@ function readLiteLLM(row, provider) {
   return { base, tiers: [...tiers], unknown, invalid };
 }
 
-function readModelsDev(cost, { fillCache = false } = {}) {
+function readModelsDev(cost, { fillCache = false, fillWrite = fillCache } = {}) {
   const invalid = [];
   const pick = (src, prefix) => {
     const slots = {};
@@ -139,8 +152,10 @@ function readModelsDev(cost, { fillCache = false } = {}) {
     return slots;
   };
   const complete = (slots) => {
-    if (!fillCache) return slots;
-    return { ...slots, cacheRead: slots.cacheRead ?? 0, write: slots.write ?? 0 };
+    const filled = { ...slots };
+    if (fillCache) filled.cacheRead = filled.cacheRead ?? 0;
+    if (fillWrite) filled.write = filled.write ?? 0;
+    return filled;
   };
   const base = complete(pick(cost, 'cost.'));
   // A tier size outside the catalog's bands could never be applied, so it is left out rather than

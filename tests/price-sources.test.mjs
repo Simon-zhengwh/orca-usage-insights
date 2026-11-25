@@ -341,12 +341,45 @@ test('parseModelsDev keeps tiers that fit the catalog bands and drops a size it 
   ]);
 });
 
-test('inBundleScope admits every Anthropic model and only GPT-5.6 and GPT-6 OpenAI models', () => {
+test('inBundleScope admits every Anthropic model, every maker model and only GPT-5.6 and GPT-6 OpenAI models', () => {
   assert.equal(inBundleScope({ id: 'claude-opus-5-5', provider: 'anthropic' }), true);
   assert.equal(inBundleScope({ id: 'gpt-5.6-sol', provider: 'openai' }), true);
   assert.equal(inBundleScope({ id: 'gpt-6.1-terra', provider: 'openai' }), true);
   assert.equal(inBundleScope({ id: 'gpt-5.2', provider: 'openai' }), false);
   assert.equal(inBundleScope({ id: 'gpt-4o', provider: 'openai' }), false);
+  // A maker's models keep their bare ids, so a gateway that names the same model prices too.
+  assert.equal(inBundleScope({ id: 'deepseek-flash', provider: 'deepseek' }), true);
+  assert.equal(inBundleScope({ id: 'glm-5.3', provider: 'zai' }), true);
+  assert.equal(inBundleScope({ id: 'openrouter-gpt-6-sol', provider: 'openrouter' }), false);
+});
+
+test('a maker model keeps its bare id and treats an omitted cache-write rate as no charge', () => {
+  const json = {
+    deepseek: {
+      models: {
+        'deepseek-flash': { cost: { input: 0.15, output: 0.6, cache_read: 0.003 } },
+        'no-read-model': { cost: { input: 0.3, output: 1.2 } },
+      },
+    },
+    zai: { models: { 'glm-5.3': { cost: { input: 1.4, output: 4.4, cache_read: 0.26, cache_write: 0 } } } },
+  };
+  const { entries, errors } = parseModelsDev(json, { asOf: ASOF, providers: ['deepseek', 'zai'] });
+  assert.deepEqual(errors, [{ id: 'no-read-model', provider: 'deepseek', reason: 'missing cacheRead' }]);
+  const m = byId(entries);
+  assert.deepEqual(Object.keys(m).sort(), ['deepseek-flash', 'glm-5.3']);
+  assert.equal(m['deepseek-flash'].provider, 'deepseek');
+  assert.deepEqual(rates(m['deepseek-flash']), {
+    input: 0.15,
+    output: 0.6,
+    cacheRead: 0.003,
+    cacheWrite: { default: 0 },
+  });
+  assert.deepEqual(rates(m['glm-5.3']), {
+    input: 1.4,
+    output: 4.4,
+    cacheRead: 0.26,
+    cacheWrite: { default: 0 },
+  });
 });
 
 test('bundledSubset of the LiteLLM fixture keeps the six trimmed bundle models', () => {

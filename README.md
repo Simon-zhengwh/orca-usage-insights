@@ -58,7 +58,7 @@ One **筛选** menu narrows it down: only sessions that ran in an Orca worktree,
   </tr>
 </table>
 
-Cost is an estimate at list API prices, so it's what the same tokens would cost on the API, not your bill. Claude, OpenAI and OpenCode models are priced, per exact model, with long-prompt tiers and 1-hour cache writes ([more below](#prices)). OpenCode model names keep their channel (`opencode/` for Console, `opencode-go/` for Go), since the same model can cost different amounts on each. A model with no price counts toward tokens, and its cost shows as `+`.
+Cost is an estimate at list API prices, so it's what the same tokens would cost on the API, not your bill. Claude, OpenAI and OpenCode models are priced, per exact model, with long-prompt tiers and 1-hour cache writes, and so are the makers people reach through their own gateway (DeepSeek, Z.ai, Moonshot, Volcengine) ([more below](#prices)). OpenCode model names keep their channel (`opencode/` for Console, `opencode-go/` for Go), since the same model can cost different amounts on each. A model with no price counts toward tokens, and its cost shows as `+`.
 
 ## Breakdown (拆解)
 
@@ -91,7 +91,7 @@ The throughput is what the transcript measured, not a guess: an hour of requests
 
 ## Prices
 
-Prices ship with the plugin, taken from [LiteLLM](https://github.com/BerriAI/litellm) and [models.dev](https://models.dev) (for OpenCode's Console and Go prices). The line at the bottom of the panel says which prices are in use.
+Prices ship with the plugin: Claude and OpenAI from [LiteLLM](https://github.com/BerriAI/litellm), and OpenCode's Console and Go prices plus the model makers (DeepSeek, Z.ai, Moonshot, Volcengine) from [models.dev](https://models.dev). A maker's models are bundled under their bare id, which is what a gateway passes through, so `deepseek-flash` costs the same whether Claude Code or Pi wrote it down. The line at the bottom of the panel says which prices are in use.
 
 **同步价格** fetches the current lists from LiteLLM and [models.dev](https://models.dev) and shows what would change, and by how much for your last 30 days. Only the rows you tick are applied. Rows where the two sources agree come pre-ticked; big jumps and anything odd never are. **撤销** puts the previous prices back, and **Reset** goes back to the bundled ones.
 
@@ -124,7 +124,7 @@ By default the plugin reads this machine's `~/.claude`, `~/.config/claude`, `~/.
 
 OpenCode 2.x is read from `${XDG_DATA_HOME:-~/.local/share}/opencode/opencode.db` (on Windows, `%USERPROFILE%\.local\share\opencode`, not `%APPDATA%`), or from the file `OPENCODE_DB` names. Channel builds such as `opencode-dev.db` count too, and installs older than 2.x are read from their old tables. The database is opened read-only and only changed messages are read. **Refresh** also drops messages deleted in OpenCode. It needs `node:sqlite` (Node 22.5 or newer, which Orca ships); without it the source shows a warning and everything else still works. SSH hosts don't read OpenCode yet.
 
-Pi sessions are read from `~/.pi/agent/sessions` (or `PI_CODING_AGENT_DIR` when it is set), one JSONL file per session. Each assistant message that reports usage counts once; a session resumed or copied under a new session ID is matched by its response ID. Pi price lists are your own, so models from a custom gateway usually show under **未分析** with a `+` next to the total.
+Pi sessions are read from `~/.pi/agent/sessions` (or `PI_CODING_AGENT_DIR` when it is set), one JSONL file per session. Each assistant message that reports usage counts once; a session resumed or copied under a new session ID is matched by its response ID. Pi price lists are your own, so a model the public lists know by the same id (such as `deepseek-flash` or `glm-5.3`) is priced, while a gateway-only name still shows under **未分析** with a `+` next to the total until you give it a price.
 
 Histories from all of them are combined. A transcript that several accounts share counts once, and so does a hard link or a copied Codex turn. Codex turns are matched by turn ID and Pi turns by response ID, so a session resumed or copied under a new session ID still counts once. Older Codex logs have no turn IDs and can't be matched across sessions. The transcripts don't say which subscription paid for a turn, so the totals cover all accounts together. The source strip under the filters shows each folder's status, files, turns and latest usage, and a transcript that several folders share is counted in each of them there.
 
