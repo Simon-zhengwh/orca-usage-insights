@@ -190,6 +190,13 @@ node --test tests/*.test.mjs    # tests
 orca plugin dev load .          # try it in Orca
 ```
 
+Installing from a Git URL takes the newest version tag (`vX.Y.Z`), and only falls back to the newest commit when the repository has no tag. So a release is a tag whose name matches `version` in `orca-plugin.json`:
+
+```sh
+git tag -a v1.4.0 -m "1.4.0"   # the tag and the manifest version agree
+git push origin v1.4.0
+```
+
 There's also `scripts/preview.mjs` to render the panel with your own data in a browser (`--breakdown` opens the 拆解 view), `scripts/bench-worker.mjs` to time it, `scripts/prices.mjs` to regenerate the bundled prices from LiteLLM and models.dev price files (`node scripts/prices.mjs <litellm.json> [modelsdev.json] --write`), and `scripts/media/render.mjs`, which makes the images above from made-up demo data.
 
 ## License
