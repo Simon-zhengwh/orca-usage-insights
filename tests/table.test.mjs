@@ -20,6 +20,7 @@ function record(i, over = {}) {
     cacheWrite1h: i % 2,
     cwd: `/w/p${i % 5}`,
     host: 'local',
+    durationMs: 1_000 + i,
     ...over,
   };
 }
@@ -91,6 +92,33 @@ test('encode gives the same table back, as cache strings and as typed arrays', (
   assert.match(encoded.cacheWrite, /^u32:/);
   assert.ok(fromJson.model instanceof Int32Array && fromJson.output instanceof Uint32Array);
 });
+test('a duration is kept only when it is a positive number, and encoded tables round-trip it', () => {
+  const table = new RecordTable(0);
+  table.push('k1', T0, 'pi', 'm', 'p', 's', undefined, 'local', 1, 2, 0, 0, 0, 1_250);
+  table.push('k2', T0, 'claude', 'm', 'p', 's', undefined, 'local', 1, 2, 0, 0, 0);
+  table.push('k3', T0, 'codex', 'm', 'p', 's', undefined, 'local', 1, 2, 0, 0, 0, 0);
+  const [measured, missing, zero] = table.toRecords();
+  assert.equal(measured.durationMs, 1_250);
+  assert.equal('durationMs' in missing, false, 'an unrecorded duration is left out, not zeroed');
+  assert.equal('durationMs' in zero, false);
+  assert.equal(Number.isNaN(table.durationMs[1]), true);
+  assert.deepEqual(decodeTable(encodeTable(table)).toRecords(), table.toRecords());
+  const binary = encodeTable(table, { binary: true });
+  assert.deepEqual(decodeTable(structuredClone(binary, { transfer: transferList(binary) })).toRecords(), table.toRecords());
+});
+
+test('an older encoded table without the duration column still decodes, with no durations', () => {
+  const good = encodeTable(tableFromRecords([record(1), record(2)]));
+  const { durationMs, ...legacy } = good;
+  assert.match(String(durationMs), /^f64:/, 'the current format does write the column');
+  const table = decodeTable(legacy);
+  assert.equal(table.length, 2);
+  assert.equal(table.toRecords().every((r) => !('durationMs' in r)), true);
+  // Only that column is optional.
+  const missingTokens = { ...legacy, output: undefined };
+  assert.throws(() => decodeTable(missingTokens));
+});
+
 
 test('a malformed encoded table throws', () => {
   const good = encodeTable(tableFromRecords([record(1), record(2)]));

@@ -16,7 +16,7 @@ import { listTranscripts, readTranscript } from './transcript-files.mjs';
 
 export { markedLines };
 
-const CACHE_VERSION = 6;
+const CACHE_VERSION = 7;
 const OPENCODE_CACHE_FILE = 'opencode-cache-v1.json';
 // Earlier caches, read when there is no current one. Their Claude entries carry over unread (parsers convert
 // pre-columns states); Codex files are read again, as their keys predate turn-based identity.

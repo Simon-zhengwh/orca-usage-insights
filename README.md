@@ -8,6 +8,7 @@
 <p align="center">
   <a href="#install">Install</a> •
   <a href="#what-you-get">What you get</a> •
+  <a href="#request-log">明细</a> •
   <a href="#breakdown">Breakdown</a> •
   <a href="#prices">Prices</a> •
   <a href="#more-machines-and-folders">More machines</a> •
@@ -30,20 +31,21 @@ Needs Orca 1.4.248 or newer.
 
 ## What you get
 
-The panel reads your Claude Code, Codex and Pi transcripts, plus the local OpenCode database, and turns them into:
+The panel reads your Claude Code, Codex and Pi transcripts, plus the local OpenCode database, and turns them into (the panel itself is in Chinese):
 
 * **Totals** for today, 7 days, 30 days, 90 days, everything or dates you pick: tokens, estimated cost, today, cache hit rate, sessions and your streak.
 * **Daily charts** of tokens or cost, per token type and per provider.
 * **A 26-week activity calendar** and a weekday by hour chart of when you work.
 * **Rankings** by model, project and machine, and a sortable **Date × model** table with exact input, output and cache token counts.
-* **A Breakdown view** that shows what your spend went on, down to the file or command ([more below](#breakdown)).
+* **A 明细 (request log) view** of single requests, newest first, with an hour-by-hour chart and the measured output speed in tokens per second ([more below](#request-log)).
+* **A Breakdown (拆解) view** that shows what your spend went on, down to the file or command ([more below](#breakdown)).
 * **A pixel-art skyline** at the top, drawn from your daily usage. The stars are your streak.
 
 It updates a few seconds after an agent finishes a turn, so the numbers keep up while you work.
 
-**7d** is the default range; **Default range** in **Settings → Plugins → Usage Insights** changes it. **Today** is the current local day from midnight, not the last 24 hours. **Custom** takes a start and end date (both included, in local time; pick the same date twice for one day). The calendar and streak keep their full history whatever the range.
+**7d** is the default range; **默认范围** in **设置 → 插件 → 用量洞察** changes it. **今日** is the current local day from midnight, not the last 24 hours. **自定义** takes a start and end date (both included, in local time; pick the same date twice for one day). The calendar and streak keep their full history whatever the range.
 
-One **Filters** menu narrows it down: only sessions that ran in an Orca worktree, one provider, one or more models, one machine, or no cache tokens. Turning cache tokens off takes them out of every total, share and chart; the cache read and write counts and the cost stay as recorded. A model selection is a fixed list, so a model that shows up later is only included under **All models**.
+One **筛选** menu narrows it down: only sessions that ran in an Orca worktree, one provider, one or more models, one machine, or no cache tokens. Turning cache tokens off takes them out of every total, share and chart; the cache read and write counts and the cost stay as recorded. A model selection is a fixed list, so a model that shows up later is only included under **全部模型**.
 
 <table>
   <tr>
@@ -58,7 +60,7 @@ One **Filters** menu narrows it down: only sessions that ran in an Orca worktree
 
 Cost is an estimate at list API prices, so it's what the same tokens would cost on the API, not your bill. Claude, OpenAI and OpenCode models are priced, per exact model, with long-prompt tiers and 1-hour cache writes ([more below](#prices)). OpenCode model names keep their channel (`opencode/` for Console, `opencode-go/` for Go), since the same model can cost different amounts on each. A model with no price counts toward tokens, and its cost shows as `+`.
 
-## Breakdown
+## Breakdown (拆解)
 
 Switch the panel to **Breakdown** to see what the money went on. It splits the same total as the Usage view, to the cent, into:
 
@@ -73,19 +75,25 @@ Switch the panel to **Breakdown** to see what the money went on. It splits the s
   </tr>
 </table>
 
-Each pattern has an **Explain** button. It gives you a prompt to paste into Claude Code or Codex. The prompt holds the numbers and a few `node` commands that print short excerpts of the transcripts involved, so your agent can work out the cause and suggest a fix. Reading those excerpts costs your agent a few thousand tokens (the panel shows an estimate), and they go to its model provider like any other file it reads.
+Each pattern has an **解释** button. It gives you a prompt to paste into Claude Code or Codex. The prompt holds the numbers and a few `node` commands that print short excerpts of the transcripts involved, so your agent can work out the cause and suggest a fix. Reading those excerpts costs your agent a few thousand tokens (the panel shows an estimate), and they go to its model provider like any other file it reads.
 
 <p align="center">
   <img src="images/screenshot-explain.png" alt="The Explain dialog with a prompt for one pattern, ready to copy" width="720">
 </p>
 
-`≈` marks a split that is estimated (several tool results in one turn are split by size). Spend that can't be split, such as usage on SSH hosts, in OpenCode or in Pi, is listed under **Not analysed** with the reason. Breakdown follows the range, custom dates included, but not the model or cache-token filters. The first Breakdown reads the transcripts changed within the range, which takes a few seconds on a big history; after that only new lines are read.
+`≈` marks a split that is estimated (several tool results in one turn are split by size). Spend that can't be split, such as usage on SSH hosts, in OpenCode or in Pi, is listed under **未分析** with the reason. 拆解 follows the range, custom dates included, but not the model or cache-token filters. The first 拆解 reads the transcripts changed within the range, which takes a few seconds on a big history; after that only new lines are read.
+
+## Request log
+
+The **明细** view lists single requests instead of totals: the local time, model, project, input, output, cache read, estimated cost, and the output speed in tokens per second. Newest first, 100 at a time, with a button for more. It follows the range and every filter, so the same **自定义** dates that narrow the panel to one day turn the log, and the chart above it, into that day. The chart folds the requests into the 24 hours of the local day, or into hour of day across the whole range.
+
+The throughput is what the transcript measured, not a guess: an hour of requests took a known number of milliseconds, and the output tokens written in that time divided by it is the speed. Only Pi records the duration of each request, so only Pi rows, and the hours they fall in, get a speed; Claude Code, Codex and OpenCode count toward tokens and cost as usual, and their speed cell stays empty rather than showing a zero. A row without a duration in a split transcript is the same: tokens counted, no speed.
 
 ## Prices
 
 Prices ship with the plugin, taken from [LiteLLM](https://github.com/BerriAI/litellm) and [models.dev](https://models.dev) (for OpenCode's Console and Go prices). The line at the bottom of the panel says which prices are in use.
 
-**Sync prices** fetches the current lists from LiteLLM and [models.dev](https://models.dev) and shows what would change, and by how much for your last 30 days. Only the rows you tick are applied. Rows where the two sources agree come pre-ticked; big jumps and anything odd never are. **Undo** puts the previous prices back, and **Reset** goes back to the bundled ones.
+**同步价格** fetches the current lists from LiteLLM and [models.dev](https://models.dev) and shows what would change, and by how much for your last 30 days. Only the rows you tick are applied. Rows where the two sources agree come pre-ticked; big jumps and anything odd never are. **撤销** puts the previous prices back, and **Reset** goes back to the bundled ones.
 
 ### Your own prices
 
@@ -116,7 +124,7 @@ By default the plugin reads this machine's `~/.claude`, `~/.config/claude`, `~/.
 
 OpenCode 2.x is read from `${XDG_DATA_HOME:-~/.local/share}/opencode/opencode.db` (on Windows, `%USERPROFILE%\.local\share\opencode`, not `%APPDATA%`), or from the file `OPENCODE_DB` names. Channel builds such as `opencode-dev.db` count too, and installs older than 2.x are read from their old tables. The database is opened read-only and only changed messages are read. **Refresh** also drops messages deleted in OpenCode. It needs `node:sqlite` (Node 22.5 or newer, which Orca ships); without it the source shows a warning and everything else still works. SSH hosts don't read OpenCode yet.
 
-Pi sessions are read from `~/.pi/agent/sessions` (or `PI_CODING_AGENT_DIR` when it is set), one JSONL file per session. Each assistant message that reports usage counts once; a session resumed or copied under a new session ID is matched by its response ID. Pi price lists are your own, so models from a custom gateway usually show under **Not analysed** with a `+` next to the total.
+Pi sessions are read from `~/.pi/agent/sessions` (or `PI_CODING_AGENT_DIR` when it is set), one JSONL file per session. Each assistant message that reports usage counts once; a session resumed or copied under a new session ID is matched by its response ID. Pi price lists are your own, so models from a custom gateway usually show under **未分析** with a `+` next to the total.
 
 Histories from all of them are combined. A transcript that several accounts share counts once, and so does a hard link or a copied Codex turn. Codex turns are matched by turn ID and Pi turns by response ID, so a session resumed or copied under a new session ID still counts once. Older Codex logs have no turn IDs and can't be matched across sessions. The transcripts don't say which subscription paid for a turn, so the totals cover all accounts together. The source strip under the filters shows each folder's status, files, turns and latest usage, and a transcript that several folders share is counted in each of them there.
 
@@ -151,16 +159,17 @@ Measured on a history of about 5,100 transcripts and 418,000 turns:
 
 * **Opening the panel** takes about 0.3 s, from the cache. The very first open, with no cache, reads everything once in about 2 s.
 * **After an agent turn**, only the new lines are read, and only the changed transcript is merged again (a few milliseconds). For OpenCode, only changed messages are queried (about 15 ms on a 50,000-turn database), and a restart doesn't open an unchanged database.
-* **Breakdown** reads every transcript the first time (a few seconds). After that it opens in about 0.2 s; switching back to a view or clicking into a project takes about 30 ms, and a view after new activity is rebuilt in about 0.1 s.
-* **Memory**: the records take about 110 MB, and Breakdown about 50 MB more once opened. The first full read uses up to about 1 GB for a few seconds while it reads in parallel.
+* **拆解** reads every transcript the first time (a few seconds). After that it opens in about 0.2 s; switching back to a view or clicking into a project takes about 30 ms, and a view after new activity is rebuilt in about 0.1 s.
+* **明细** sorts the requests in the range each time it opens (about 45 ms for 14,000 of 117,000), then hands back one page. **加载更多** asks again with a bigger offset and gives the next 100.
+* **Memory**: the records take about 130 MB, and Breakdown about 50 MB more once opened. The first full read uses up to about 1 GB for a few seconds while it reads in parallel.
 
-The first open after updating from 1.1.0 reads everything once, like a first install, because the cache now keeps more per turn (such as 1-hour cache writes). The first Breakdown after updating to the OpenCode release reads its transcripts once more, because prompts over 512k tokens now have their own price band.
+The first open after updating reads everything once, like a first install, because the cache now keeps more per turn: 1-hour cache writes, and the measured duration that the 明细 view needs for a speed. The first Breakdown after updating to the OpenCode release reads its transcripts once more, because prompts over 512k tokens now have their own price band.
 
 ## Privacy
 
-Your transcripts stay on your machines. The plugin makes no network requests of its own, with two exceptions you start yourself: the SSH connections you add, and **Sync prices**, which downloads the public price lists from `raw.githubusercontent.com` (LiteLLM) and `models.dev` when you click it. Nothing about your usage is sent with those requests.
+Your transcripts stay on your machines. The plugin makes no network requests of its own, with two exceptions you start yourself: the SSH connections you add, and **同步价格**, which downloads the public price lists from `raw.githubusercontent.com` (LiteLLM) and `models.dev` when you click it. Nothing about your usage is sent with those requests.
 
-**What it reads:** your Claude Code, Codex and Pi transcripts, including Codex's compressed `.jsonl.zst` files, and your local OpenCode SQLite database. Breakdown does not read OpenCode or Pi yet, so their spend shows under **Not analysed**.
+**What it reads:** your Claude Code, Codex and Pi transcripts, including Codex's compressed `.jsonl.zst` files, and your local OpenCode SQLite database. 拆解 does not read OpenCode or Pi yet, so their spend shows under **未分析**.
 
 **What it keeps** in its cache folder, so later opens are fast:
 
@@ -181,7 +190,7 @@ node --test tests/*.test.mjs    # tests
 orca plugin dev load .          # try it in Orca
 ```
 
-There's also `scripts/preview.mjs` to render the panel with your own data in a browser (`--breakdown` opens the Breakdown view), `scripts/bench-worker.mjs` to time it, `scripts/prices.mjs` to regenerate the bundled prices from LiteLLM and models.dev price files (`node scripts/prices.mjs <litellm.json> [modelsdev.json] --write`), and `scripts/media/render.mjs`, which makes the images above from made-up demo data.
+There's also `scripts/preview.mjs` to render the panel with your own data in a browser (`--breakdown` opens the 拆解 view), `scripts/bench-worker.mjs` to time it, `scripts/prices.mjs` to regenerate the bundled prices from LiteLLM and models.dev price files (`node scripts/prices.mjs <litellm.json> [modelsdev.json] --write`), and `scripts/media/render.mjs`, which makes the images above from made-up demo data.
 
 ## License
 

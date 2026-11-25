@@ -9,7 +9,7 @@ import { createRecordStore } from '../core/record-store.mjs';
 import { NameDict } from '../core/table.mjs';
 import { LIST_SCRIPT, createReadParser, parseListing, readScript } from './ssh-script.mjs';
 
-const CACHE_VERSION = 5;
+const CACHE_VERSION = 6;
 // Version 3 held parser states as packed rows; the parsers convert them when restored. Codex entries from
 // versions before 5 are read again: their keys predate turn-based identity.
 const LEGACY_CACHE_VERSIONS = new Set([3, 4]);

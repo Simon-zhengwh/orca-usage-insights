@@ -199,6 +199,7 @@ export function createRecordStore({ names = new NameDict() } = {}) {
     const out = new RecordTable(0, names);
     out.length = total;
     out.ms = new Float64Array(total);
+    out.durationMs = new Float64Array(total);
     for (const field of TOKEN_FIELDS) out[field] = wide.has(field) ? new Float64Array(total) : new Uint32Array(total);
     for (const field of NAME_FIELDS) out[field] = new Int32Array(total);
     out.keys = new Array(total).fill(undefined);
@@ -241,6 +242,7 @@ export function createRecordStore({ names = new NameDict() } = {}) {
         for (const field of COLUMNS) copy(field);
       } else {
         copy('ms');
+        copy('durationMs');
         for (const field of TOKEN_FIELDS) copy(field);
         const map = remapFor(t.dict);
         for (const field of NAME_FIELDS) {
@@ -268,6 +270,7 @@ export function createRecordStore({ names = new NameDict() } = {}) {
 
   function copyRow(t, r, out, i) {
     out.ms[i] = t.ms[r];
+    out.durationMs[i] = t.durationMs[r];
     out.input[i] = t.input[r];
     out.output[i] = t.output[r];
     out.cacheRead[i] = t.cacheRead[r];

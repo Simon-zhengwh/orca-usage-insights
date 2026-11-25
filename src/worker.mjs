@@ -7,6 +7,7 @@ import v8 from 'node:v8';
 import vm from 'node:vm';
 import { compact } from './core/format.mjs';
 import { buildReport } from './core/report.mjs';
+import { buildRequestLog, LOG_LIMIT_MAX } from './core/request-log.mjs';
 import { normalizeQuery, parseDateDay } from './core/query.mjs';
 import { createRecordStore } from './core/record-store.mjs';
 import { asTable, distinctNames } from './core/table.mjs';
@@ -21,8 +22,8 @@ import { createScanner } from './node/scan.mjs';
 import { createSshSource } from './node/ssh-source.mjs';
 
 const SCOPES = new Set(['all', 'worktrees']);
-const CACHE_FILE = 'scan-cache-v6.json';
-const LEGACY_CACHE_FILES = ['scan-cache-v5.json', 'scan-cache-v4.json'];
+const CACHE_FILE = 'scan-cache-v7.json';
+const LEGACY_CACHE_FILES = ['scan-cache-v6.json', 'scan-cache-v5.json', 'scan-cache-v4.json'];
 const POLL_MS = 60_000;
 // The panel waits this long at most for SSH hosts. A host still running then is reported as loading.
 const SSH_WAIT_MS = 1_500;
@@ -135,6 +136,9 @@ export function startWorker(orca, scanner, {
 
   // Sync is not tracked: it may wait on the network, and stop() must not. Its own scan is tracked.
   orca.panels.handle('usage.breakdown', (input) => track(async () => breakdown(parseBreakdownInput(input, now()))));
+
+  // The request log pages through single turns, and asks again with a bigger offset for more.
+  orca.panels.handle('usage.log', (input) => track(async () => requestLog(parseLogInput(input, now()))));
   orca.panels.handle('usage.explain', (input) => track(async () => explain(parseExplainInput(input, now()))));
   orca.panels.handle('sources.toggle', (input) => track(async () => toggleSource(parseToggleInput(input))));
 
@@ -169,6 +173,17 @@ export function startWorker(orca, scanner, {
     views.set(key, view);
     if (views.size > VIEWS_KEPT) views.delete(views.keys().next().value);
     return scope.scopeError ? { ...view, scopeError: scope.scopeError } : view;
+  }
+
+  // One page of individual requests for the current filters, plus an hour-of-day rollup.
+  async function requestLog(options) {
+    const [gathered, scope, catalog] = await Promise.all([
+      gather({ force: false, detach: false }),
+      scopeFor(options.scope),
+      priceBook.catalog(),
+    ]);
+    const log = buildRequestLog(gathered.records, { ...options, now: now(), scope: scope.scope, catalog });
+    return scope.scopeError ? { ...log, scopeError: scope.scopeError } : log;
   }
 
   async function explain(options) {
@@ -792,6 +807,30 @@ function parseBreakdownInput(input, at = new Date()) {
     throw invalidParams('path must be an array of at most 8 strings of at most 500 characters');
   }
   return { ...out, path };
+}
+
+function parseLogInput(input, at = new Date()) {
+  const { day, offset, limit, ...rest } = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
+  const out = parseReportInput(input === undefined ? undefined : rest, at);
+  const page = {};
+  if (day !== undefined) {
+    if (typeof day !== 'string') throw invalidParams('day must be a YYYY-MM-DD string');
+    try {
+      parseDateDay(day);
+    } catch (error) {
+      throw invalidParams(error.message);
+    }
+    page.day = day;
+  }
+  if (offset !== undefined) {
+    if (!Number.isSafeInteger(offset) || offset < 0) throw invalidParams('offset must be a non-negative integer');
+    page.offset = offset;
+  }
+  if (limit !== undefined) {
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > LOG_LIMIT_MAX) throw invalidParams(`limit must be an integer from 1 to ${LOG_LIMIT_MAX}`);
+    page.limit = limit;
+  }
+  return { ...out, ...page };
 }
 
 function parseExplainInput(input, at = new Date()) {

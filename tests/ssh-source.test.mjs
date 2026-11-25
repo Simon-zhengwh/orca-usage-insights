@@ -214,7 +214,7 @@ for (const version of [3, 4]) {
     assert.deepEqual(restored.map((r) => r.provider).sort(), ['claude', 'codex']);
     assert.equal(JSON.parse(restored.find((r) => r.provider === 'codex').key)[2], 'cached-turn');
     await online.source.close();
-    assert.equal(JSON.parse(await fsp.readFile(cacheFile, 'utf8')).version, 5);
+    assert.equal(JSON.parse(await fsp.readFile(cacheFile, 'utf8')).version, 6);
   });
 }
 

@@ -265,6 +265,18 @@ table.bd { width: 100%; border-collapse: collapse; font-variant-numeric: tabular
 .filter-btn .count[hidden] { display: none; }
 .tiles { grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
 
+/* --- 1.3.0: request log, throughput --- */
+#log:not([hidden]) { display: flex; flex-direction: column; gap: 16px; }
+/* 100 rows stay scannable: dense cells, and the model column does not take the table's width. */
+#log-table th, #log-table td { padding: 5px 8px; font-size: 12px; }
+#log-table th:nth-child(-n+3) { text-align: left; }
+#log-table td.name { width: auto; white-space: nowrap; }
+#log-table td:nth-child(3) { text-align: left; }
+#log-table td.speed { font-variant-numeric: tabular-nums; }
+#log-speed .chart { margin-top: 4px; }
+.log-foot { display: flex; align-items: center; gap: 10px; }
+.log-foot .btn[hidden] { display: none; }
+
 /* --- 1.2.0: Breakdown view, price line, dialogs --- */
 .small { font-size: 11px; }
 #bd:not([hidden]), #bd-body:not([hidden]) { display: flex; flex-direction: column; gap: 16px; }

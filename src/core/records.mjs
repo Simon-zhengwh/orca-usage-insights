@@ -3,7 +3,7 @@
 // caller sends it again with the next chunk, so the scanner cuts chunks at the last LF byte.
 
 import { decodeTable, encodeTable } from './table-codec.mjs';
-import { NameDict, tableFromRecords } from './table.mjs';
+import { NameDict, durationOf, tableFromRecords } from './table.mjs';
 import { timestampParser } from './time.mjs';
 
 // Line markers. providers.mjs builds LINE_MARKERS from these, so records.mjs cannot import it.
@@ -69,7 +69,7 @@ export function createPiParser(ctx, state, { names } = {}) {
     const recordModel = nonEmptyString(message.model) ?? nonEmptyString(model) ?? 'unknown';
     const { input, output, cacheRead, cacheWrite } = piUsage(message.usage);
     const key = piKey(obj, message, session);
-    const row = [ms, 'pi', recordModel, currentProject, session, currentCwd, host, input, output, cacheRead, cacheWrite, 0];
+    const row = [ms, 'pi', recordModel, currentProject, session, currentCwd, host, input, output, cacheRead, cacheWrite, 0, durationOf(message.durationMs)];
     if (key === null) {
       table.push(undefined, ...row);
       return;

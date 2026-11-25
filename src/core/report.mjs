@@ -36,6 +36,11 @@ export function buildReport(records, { now = new Date(), providers, hosts, scope
   const hostBuckets = new Map();
   const unpricedByModel = new Map(); // model id -> { model, turns, tokens }, in-range records only
   const dayModels = new Map(); // day -> model id * (names + 1) + provider id + 1 -> bucket with its sessions
+  // Throughput, over the in-range turns whose transcript recorded a duration (Pi does, Claude and
+  // Codex do not), so the speed is measured rather than inferred.
+  let timedOutput = 0;
+  let timedMs = 0;
+  let timedTurns = 0;
   const sessionStride = names.length + 1;
   const { provider: providerCol, model: modelCol, project: projectCol, sessionId: sessionCol, host: hostCol } = table;
   const { input: inputCol, output: outputCol, cacheRead: readCol, cacheWrite: writeCol } = table;
@@ -56,6 +61,12 @@ export function buildReport(records, { now = new Date(), providers, hosts, scope
     const sessionId = sessionCol[i];
     const host = hostNames[hostCol[i] + 1];
     add(totals, input, output, cacheRead, cacheWrite, cost);
+    const durationMs = table.durationMs[i];
+    if (Number.isFinite(durationMs) && durationMs > 0) {
+      timedTurns++;
+      timedOutput += output;
+      timedMs += durationMs;
+    }
     if (cost === null) {
       const unpriced = getOrSet(unpricedByModel, model, () => ({ model: nameOf(model), turns: 0, tokens: 0 }));
       unpriced.turns += 1;
@@ -165,6 +176,9 @@ export function buildReport(records, { now = new Date(), providers, hosts, scope
       cacheReuseRate: reads > 0 ? totals.cacheRead / reads : 0,
       // Stricter: cache writes are input that missed the cache, so they count in the denominator.
       cacheHitRate: reads + totals.cacheWrite > 0 ? totals.cacheRead / (reads + totals.cacheWrite) : 0,
+      // Output tokens per second over the measured turns only; null when none recorded a duration.
+      tokPerSec: timedMs > 0 ? Math.round((timedOutput / (timedMs / 1000)) * 10) / 10 : null,
+      timedTurns,
     },
     today: { ...tokenFields(todayBucket), costUsd: costOf(todayBucket) },
     daily,

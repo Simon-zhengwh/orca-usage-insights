@@ -230,6 +230,7 @@ test('startWorker registers the usage.report, usage.refresh and price handlers',
     'sources.toggle',
     'usage.breakdown',
     'usage.explain',
+    'usage.log',
     'usage.refresh',
     'usage.report',
   ]);
@@ -268,6 +269,41 @@ test('usage.report rejects bad input with code invalid_params', async () => {
   for (const input of bad) {
     await assert.rejects(handler(input), (error) => error.code === 'invalid_params', JSON.stringify(input));
     await assert.rejects(mock.handlers.get('usage.refresh')(input), (error) => error.code === 'invalid_params', JSON.stringify(input));
+  }
+  await worker.stop();
+});
+
+test('usage.log pages single requests, reports only measured speeds and validates paging', async () => {
+  const mock = mockOrca();
+  const records = [
+    usageRecord({ provider: 'pi', model: 'deepseek-v4.1-flash', durationMs: 1_000, output: 80 }),
+    usageRecord({ sessionId: 's2', output: 10 }),
+  ];
+  const worker = startWorker(mock.orca, fakeScanner(() => result(records)), { now: NOON, pollMs: 60_000 });
+  await worker.ready;
+  const handler = mock.handlers.get('usage.log');
+
+  const page = await handler({});
+  assert.equal(page.total, 2);
+  assert.equal(page.rows.length, 2);
+  assert.equal(page.offset, 0);
+  assert.equal(page.limit, 100);
+  const measured = page.rows.find((row) => row.provider === 'pi');
+  assert.equal(measured.tokPerSec, 80);
+  assert.equal(measured.durationMs, 1_000);
+  const unmeasured = page.rows.find((row) => row.provider === 'claude');
+  assert.equal(unmeasured.tokPerSec, undefined);
+  assert.equal(page.totals.tokPerSec, 80, 'the total averages only the measured request');
+  assert.equal(page.hourly.length, 24);
+  assert.equal(page.hourly.reduce((n, h) => n + h.requests, 0), 2);
+
+  const second = await handler({ offset: 1, limit: 1, day: '2026-11-03' });
+  assert.equal(second.rows.length, 1);
+  assert.equal(second.total, 2, 'the total counts the day, not the page');
+  assert.equal(second.day, '2026-11-03');
+
+  for (const input of [{ day: '2026-11-31' }, { day: 3 }, { day: 'yesterday' }, { offset: -1 }, { offset: 1.5 }, { limit: 0 }, { limit: 9_999 }, { limit: null }]) {
+    await assert.rejects(handler(input), (error) => error.code === 'invalid_params', JSON.stringify(input));
   }
   await worker.stop();
 });
@@ -844,8 +880,8 @@ test('activate scans the real roots and deactivate flushes the cache under the c
     await deactivate();
   }
 
-  const cache = JSON.parse(await fsp.readFile(path.join(cacheDir(), 'scan-cache-v6.json'), 'utf8'));
-  assert.equal(cache.version, 6);
+  const cache = JSON.parse(await fsp.readFile(path.join(cacheDir(), 'scan-cache-v7.json'), 'utf8'));
+  assert.equal(cache.version, 7);
   assert.equal(Object.keys(cache.files).length, 1);
 });
 

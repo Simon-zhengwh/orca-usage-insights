@@ -20,7 +20,7 @@
 
   <nav class="controls" aria-label="筛选">
     <div class="seg" role="radiogroup" aria-label="视图" id="view">
-      <button role="radio" data-view="usage" aria-checked="true">用量</button><button role="radio" data-view="breakdown" aria-checked="false" tabindex="-1">拆解</button>
+      <button role="radio" data-view="usage" aria-checked="true">用量</button><button role="radio" data-view="log" aria-checked="false" tabindex="-1">明细</button><button role="radio" data-view="breakdown" aria-checked="false" tabindex="-1">拆解</button>
     </div>
     <div class="seg" role="radiogroup" aria-label="时间范围" id="ranges">
       <button role="radio" data-range="1d" aria-checked="false" tabindex="-1">今天</button><button role="radio" data-range="7d" aria-checked="true">7 天</button><button role="radio" data-range="30d" aria-checked="false" tabindex="-1">30 天</button><button role="radio" data-range="90d" aria-checked="false" tabindex="-1">90 天</button><button role="radio" data-range="all" aria-checked="false" tabindex="-1">全部</button><button role="radio" data-range="custom" aria-checked="false" tabindex="-1" aria-controls="custom-range">自定义</button>
@@ -151,6 +151,28 @@
 
     <p class="footnote muted">读自本机的 Claude Code、Codex、Pi 转录与本地 OpenCode 数据库（含 Orca 的账号目录），以及设置里添加的文件夹和 SSH 主机。多个账号的历史会合并。用量数据不会发送到任何地方。成本按 API 标价估算。</p>
   </section>
+  <section id="log" aria-label="明细" hidden>
+    <p id="log-status" class="status" role="status" hidden></p>
+    <article class="card">
+      <header><h2 id="log-hour-title">每小时用量与吞吐</h2><span class="pill" id="log-hour-pill"></span></header>
+      <p class="muted" id="log-hour-sub"></p>
+      <div id="log-hour"></div>
+      <ul class="legend" id="log-hour-legend"></ul>
+      <div id="log-speed"></div>
+    </article>
+    <article class="card">
+      <header><h2>逐笔请求</h2><span class="pill" id="log-count"></span></header>
+      <p class="muted" id="log-sub"></p>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="逐笔请求，左右滚动查看更多列">
+        <table class="bd" id="log-table"></table>
+      </div>
+      <footer class="log-foot">
+        <button class="btn" id="log-more" hidden>加载更多</button>
+        <span class="muted small" id="log-more-hint"></span>
+      </footer>
+    </article>
+  </section>
+
   <section id="bd" aria-label="拆解" hidden>
     <p id="bd-status" class="status" role="status" hidden></p>
     <button id="bd-stale" class="stale" hidden>此视图之后有新的用量 · 更新</button>

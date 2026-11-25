@@ -30,6 +30,16 @@ test('totals sum the four token kinds and derive cache reuse', () => {
   assert.equal(r.totals.cacheHitRate, 300 / 410);
 });
 
+test('throughput comes from measured turns only and is null when none recorded a duration', () => {
+  const r = build([rec(ago(0), { output: 100, durationMs: 2_000 }), rec(ago(0), { output: 500 })]);
+  assert.equal(r.totals.tokPerSec, 50, 'the unmeasured turn adds no output to the speed');
+  assert.equal(r.totals.timedTurns, 1);
+  assert.equal(build([rec(ago(0), { output: 10 })]).totals.tokPerSec, null);
+  assert.equal(build([]).totals.tokPerSec, null);
+  // A turn outside the range does not count.
+  assert.equal(build([rec(ago(9), { output: 100, durationMs: 1_000 })]).totals.tokPerSec, null);
+});
+
 test('cache reuse is 0 when there is no input or cache read', () => {
   assert.equal(build([rec(ago(0), { output: 9 })]).totals.cacheReuseRate, 0);
   assert.equal(build([]).totals.cacheReuseRate, 0);

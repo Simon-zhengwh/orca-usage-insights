@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { dayTicks, areaTrend, segmentBar, smoothPath, stackedBars, calendarHeatmap, punchCard, donut, hBars, sparkline, esc, levels } from '../src/panel/charts.mjs'
+import { dayTicks, areaTrend, segmentBar, smoothPath, stackedBars, hourBars, speedTrend, calendarHeatmap, punchCard, donut, hBars, sparkline, esc, levels } from '../src/panel/charts.mjs'
 import { pixelBanner, paintScene, resample, skyFor } from '../src/panel/art.mjs'
 
 const day = (d, v) => ({ day: d, input: v, output: v / 2, cacheRead: v * 4, cacheWrite: v / 4, total: v * 5.75, costUsd: 0 })
@@ -9,6 +9,39 @@ const wellFormed = (s) => {
   assert.ok(s.endsWith('</svg>'))
   assert.ok(!/NaN|undefined|Infinity/.test(s), 'no NaN/undefined in markup')
 }
+
+const hour = (h, tokens, tokPerSec = null) => ({ hour: h, requests: tokens ? 1 : 0, input: tokens / 2, output: tokens / 4, cacheRead: tokens / 4, cacheWrite: 0, tokens, uncached: tokens * 0.75, costUsd: 0, output_: 0, durationMs: 0, timed: tokPerSec == null ? 0 : 1, tokPerSec })
+
+test('hourBars draws one mark per hour with hour labels and a throughput tooltip', () => {
+  const hours = Array.from({ length: 24 }, (_, h) => hour(h, h === 9 ? 1000 : 0, h === 9 ? 42.5 : null))
+  const s = hourBars(hours, { keys: ['input', 'output', 'cacheRead'] })
+  wellFormed(s)
+  assert.equal((s.match(/class="mark"/g) || []).length, 24)
+  assert.match(s, />9时</)
+  assert.match(s, />23时</)
+  assert.match(JSON.stringify(s), /输出吞吐/)
+  assert.match(JSON.stringify(s), /42\.5 Token\/秒/)
+  assert.match(hourBars([]), /暂无用量/)
+  assert.match(hourBars(hours.map((x) => ({ ...x, tokens: 0, input: 0, output: 0, cacheRead: 0 }))), /暂无用量/)
+  // The cache-off keys never draw a cache segment.
+  const dry = hourBars(hours, { keys: ['input', 'output'] })
+  wellFormed(dry)
+})
+
+test('speedTrend skips hours without a measurement instead of drawing zeros', () => {
+  const hours = Array.from({ length: 24 }, (_, h) => hour(h, h === 9 || h === 10 ? 1000 : 0, h === 9 ? 20 : h === 10 ? 60 : null))
+  const s = speedTrend(hours)
+  wellFormed(s)
+  assert.equal((s.match(/spark-dot/g) || []).length, 2, 'one dot per measured hour')
+  assert.match(s, /<polyline points="[^"]*"/, 'measured hours are joined')
+  assert.match(s, /text-anchor="end">40</, 'the axis tops out at a round number')
+  assert.match(speedTrend(hours.map((h) => ({ ...h, tokPerSec: null })), { width: 240 }), /暂无用量/)
+  // A gap between measured hours breaks the line instead of bridging it.
+  const split = speedTrend(hours.map((h) => ({ ...h, tokPerSec: h.hour === 9 ? 20 : h.hour === 12 ? 60 : null })))
+  wellFormed(split)
+  assert.equal((split.match('<polyline') || []).length, 0, 'no line across a gap')
+})
+
 
 test('esc escapes markup', () => {
   assert.equal(esc(`<a href="x">'&`), '&lt;a href=&quot;x&quot;&gt;&#39;&amp;')

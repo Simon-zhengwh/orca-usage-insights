@@ -51,9 +51,13 @@ export function decodeTable(encoded, dict = new NameDict()) {
   const table = new RecordTable(0, dict);
   table.keys = encoded.keys.map((k) => (typeof k === 'string' ? k : undefined));
   for (const field of COLUMNS) {
-    const column = decodeColumn(encoded[field], field);
-    if (column.length !== n) throw new Error(`bad record table column ${field}`);
-    table[field] = column;
+    const decoded = decodeColumn(encoded[field], field);
+    if (decoded === undefined) {
+      table[field] = new Float64Array(n).fill(NaN);
+      continue;
+    }
+    if (decoded.length !== n) throw new Error(`bad record table column ${field}`);
+    table[field] = decoded;
   }
   const map = new Int32Array(encoded.names.length);
   for (let id = 0; id < map.length; id++) map[id] = dict.id(encoded.names[id]);
@@ -85,7 +89,10 @@ function encodeColumn(column, isName) {
 
 const COLUMN_TYPES = { f64: Float64Array, u32: Uint32Array, i32: Int32Array, u8: Uint8Array, u16: Uint16Array, n8: Uint8Array, n16: Uint16Array };
 
+const OPTIONAL_COLUMNS = new Set(['durationMs']); // written since the speed release; older tables leave it empty
+
 function decodeColumn(value, field) {
+  if (value === undefined && OPTIONAL_COLUMNS.has(field)) return undefined;
   const isName = NAME_FIELDS.includes(field);
   if (ArrayBuffer.isView(value)) {
     const ok = field === 'ms' ? value instanceof Float64Array : isName ? value instanceof Int32Array : value instanceof Float64Array || value instanceof Uint32Array;

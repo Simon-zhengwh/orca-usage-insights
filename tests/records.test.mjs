@@ -25,11 +25,11 @@ const piCtx = { sessionId: 'ctx-session', project: 'ctx-project' };
 
 const piExpected = [
   // One record per provider response; the copy of the same response replaces it, so the last line wins.
-  { key: 'pi:resp_a1', provider: 'pi', ts: '2026-10-01T09:01:00.000Z', model: 'deepseek-v4.1-flash', project: 'theta', sessionId: 'pi-sess-a', input: 100, output: 41, cacheRead: 1000, cacheWrite: 50, cacheWrite1h: 0, cwd: '/home/me/work/theta', host: 'local' },
+  { key: 'pi:resp_a1', provider: 'pi', ts: '2026-10-01T09:01:00.000Z', model: 'deepseek-v4.1-flash', project: 'theta', sessionId: 'pi-sess-a', input: 100, output: 41, cacheRead: 1000, cacheWrite: 50, cacheWrite1h: 0, cwd: '/home/me/work/theta', host: 'local', durationMs: 120 },
   // No model and no response id: the model_change line supplies the model, the line id the key.
-  { key: 'pi:pi-sess-a:a2', provider: 'pi', ts: '2026-10-01T09:02:00.000Z', model: 'deepseek-v4.1-flash', project: 'theta', sessionId: 'pi-sess-a', input: 200, output: 20, cacheRead: 0, cacheWrite: 0, cacheWrite1h: 0, cwd: '/home/me/work/theta', host: 'local' },
+  { key: 'pi:pi-sess-a:a2', provider: 'pi', ts: '2026-10-01T09:02:00.000Z', model: 'deepseek-v4.1-flash', project: 'theta', sessionId: 'pi-sess-a', input: 200, output: 20, cacheRead: 0, cacheWrite: 0, cacheWrite1h: 0, cwd: '/home/me/work/theta', host: 'local', durationMs: 120 },
   // A failed call that still billed tokens is usage; with no response id the line id keys it.
-  { key: 'pi:pi-sess-a:a3', provider: 'pi', ts: '2026-10-01T09:03:00.000Z', model: 'glm-5.3', project: 'theta', sessionId: 'pi-sess-a', input: 5, output: 1, cacheRead: 0, cacheWrite: 0, cacheWrite1h: 0, cwd: '/home/me/work/theta', host: 'local' },
+  { key: 'pi:pi-sess-a:a3', provider: 'pi', ts: '2026-10-01T09:03:00.000Z', model: 'glm-5.3', project: 'theta', sessionId: 'pi-sess-a', input: 5, output: 1, cacheRead: 0, cacheWrite: 0, cacheWrite1h: 0, cwd: '/home/me/work/theta', host: 'local', durationMs: 120 },
 ];
 
 const claudeExpected = [
@@ -60,6 +60,26 @@ const codexExpected = [
 test('pi fixture counts only assistant usage, dedupes provider responses and keeps thinking in output', () => {
   assert.deepEqual(parsePiTranscript(piText, piCtx), piExpected);
 });
+test('pi keeps the request duration when it is recorded, so the panel can show a throughput', () => {
+  const line = (extra) => JSON.stringify({ type: 'message', id: 'a9', timestamp: '2026-10-01T09:09:00.000Z', message: { role: 'assistant', model: 'deepseek-v4.1-flash', usage: { input: 10, output: 40 }, ...extra } });
+  const [measured] = parsePiTranscript(line({ durationMs: 250 }), piCtx);
+  assert.equal(measured.durationMs, 250);
+  const [unmeasured] = parsePiTranscript(line({}), piCtx);
+  assert.equal('durationMs' in unmeasured, false);
+  const [zero] = parsePiTranscript(line({ durationMs: 0 }), piCtx);
+  assert.equal('durationMs' in zero, false, 'a zero duration is not a measurement');
+});
+
+test('pi keeps the request duration when it is recorded, so the panel can show a throughput', () => {
+  const line = (extra) => JSON.stringify({ type: 'message', id: 'a9', timestamp: '2026-10-01T09:09:00.000Z', message: { role: 'assistant', model: 'deepseek-v4.1-flash', usage: { input: 10, output: 40 }, ...extra } });
+  const [measured] = parsePiTranscript(line({ durationMs: 250 }), piCtx);
+  assert.equal(measured.durationMs, 250);
+  const [unmeasured] = parsePiTranscript(line({}), piCtx);
+  assert.equal('durationMs' in unmeasured, false);
+  const [zero] = parsePiTranscript(line({ durationMs: 0 }), piCtx);
+  assert.equal('durationMs' in zero, false, 'a zero duration is not a measurement');
+});
+
 
 test('pi tool results, user turns and a broken line never become usage', () => {
   const toolLine = piLines.find((line) => line.includes('toolResult'));

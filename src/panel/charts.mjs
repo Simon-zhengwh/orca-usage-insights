@@ -353,3 +353,109 @@ export function segmentBar(segments, { width = 360, height = 10, id = 'sbar' } =
   }
   return svg(width, height, body, label)
 }
+
+// Hour-of-day bars for the request log: 24 slots, each the tokens spent in that local hour. Same
+// stacking and tooltips as the daily chart, so a day can be read at a different zoom.
+export function hourBars(hours, { keys = TOKEN_KEYS, width = 360, height = 170, id = 'hb', colors = TOKEN_COLORS, labels = TOKEN_LABELS, fmt = null } = {}) {
+  const label = '每小时用量'
+  if (!hours?.length) return empty(width, height, label)
+  const top = 18
+  const bottom = 20
+  const plotH = height - top - bottom
+  const totals = hours.map((h) => keys.reduce((s, k) => s + (h[k] || 0), 0))
+  const max = Math.max(...totals)
+  if (max <= 0) return empty(width, height, label)
+  const slot = width / hours.length
+  const barW = Math.max(2, Math.min(24, slot * 0.66))
+  const radius = Math.min(4, barW / 2)
+  let defs = ''
+  let body = `<line x1="0" x2="${width}" y1="${top + plotH + 0.5}" y2="${top + plotH + 0.5}" class="axis"/>`
+  body += `<text x="0" y="11" class="t-muted">${esc(fmt ? fmt(max) : compact(max))}</text>`
+  hours.forEach((h, i) => {
+    const x = i * slot + (slot - barW) / 2
+    const total = totals[i]
+    const barH = (total / max) * plotH
+    const show = (v) => (fmt ? fmt(v) : v)
+    const rows = keys.map((k) => [labels[k] ?? k, show(h[k] || 0)])
+    // The throughput belongs to the hour, not to a segment, so it goes in the same tooltip.
+    if (h.tokPerSec != null) rows.push(['输出吞吐', `${h.tokPerSec} Token/秒`])
+    const tip = esc(JSON.stringify({ title: `${h.hour}时`, rows, total: keys.length > 1 ? show(total) : undefined }))
+    body += `<g class="mark" data-tip="${tip}">`
+    body += `<rect x="${i * slot}" y="${top}" width="${slot}" height="${plotH}" class="hit"/>`
+    if (barH > 0) {
+      const cid = `${id}-h${i}`
+      defs += `<clipPath id="${cid}"><rect x="${x}" y="${top + plotH - barH}" width="${barW}" height="${barH + radius}" rx="${radius}"/></clipPath>`
+      body += `<g clip-path="url(#${cid})">`
+      let y = top + plotH
+      let drawn = 0
+      for (const k of keys) {
+        const v = h[k] || 0
+        if (v <= 0) continue
+        const sh = (v / max) * plotH
+        y -= sh
+        const gap = drawn++ > 0 ? Math.min(2, sh / 2) : 0
+        body += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(0, sh - gap)}" fill="${colors[k] ?? 'var(--s1)'}"/>`
+      }
+      body += `</g>`
+    }
+    body += `</g>`
+  })
+  for (const i of hourTicks(hours.length, slot)) {
+    body += `<text x="${(i * slot + slot / 2).toFixed(1)}" y="${top + plotH + 14}" class="t-muted" text-anchor="middle">${i}时</text>`
+  }
+  return svg(width, height, `<defs>${defs}</defs>${body}`, label)
+}
+
+// Which hours get an axis label: every 3rd hour, and the last one so the axis ends.
+function hourTicks(n, slotPx) {
+  const step = Math.max(1, Math.ceil(34 / Math.max(1, slotPx)) * 1)
+  const out = []
+  for (let i = 0; i < n; i++) if (i % Math.max(step, 3) === 0) out.push(i)
+  if (out[out.length - 1] !== n - 1) out.push(n - 1)
+  return out
+}
+
+// Throughput per hour as a line with dots, skipping hours without a measured request rather than
+// drawing a zero. The axis tops out at a round number so a spike doesn't flatten the rest.
+export function speedTrend(hours, { width = 360, height = 110, id = 'sp' } = {}) {
+  const label = '每小时吞吐'
+  const values = (hours || []).map((h) => h.tokPerSec)
+  const known = values.filter((v) => v != null)
+  if (!known.length) return empty(width, height, label)
+  const left = 36
+  const top = 10
+  const bottom = 18
+  const plotW = width - left
+  const plotH = height - top - bottom
+  const max = niceMax(Math.max(...known))
+  const xOf = (i) => left + (hours.length === 1 ? plotW / 2 : (i / (hours.length - 1)) * plotW)
+  const yOf = (v) => top + plotH - (v / max) * plotH
+  let body = `<line x1="${left}" x2="${width}" y1="${top + plotH + 0.5}" y2="${top + plotH + 0.5}" class="axis"/>`
+  for (const level of [0.5, 1]) {
+    const y = yOf(max * level)
+    body += `<line x1="${left}" x2="${width}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" class="grid"/>`
+    body += `<text x="${left - 6}" y="${(y + 3).toFixed(1)}" class="t-faint" text-anchor="end">${esc(compact(max * level))}</text>`
+  }
+  // One polyline per run of hours that have a throughput, so gaps stay gaps.
+  let run = []
+  const flush = () => {
+    if (run.length > 1) body += `<polyline points="${run.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')}" fill="none" class="spark" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`
+    run = []
+  }
+  hours.forEach((h, i) => {
+    if (h.tokPerSec == null) {
+      flush()
+      return
+    }
+    const x = xOf(i)
+    const y = yOf(h.tokPerSec)
+    run.push([x, y])
+    const tip = esc(JSON.stringify({ title: `${h.hour}时`, rows: [['输出吞吐', `${h.tokPerSec} Token/秒`], ['输出 Token', h.output || 0], ['请求', h.requests || 0]] }))
+    body += `<g class="mark" data-tip="${tip}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" class="hit"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5" class="spark-dot"/></g>`
+  })
+  flush()
+  for (const i of hourTicks(hours.length, plotW / hours.length)) {
+    body += `<text x="${xOf(i).toFixed(1)}" y="${height - 4}" class="t-muted" text-anchor="middle">${i}时</text>`
+  }
+  return svg(width, height, body, label)
+}

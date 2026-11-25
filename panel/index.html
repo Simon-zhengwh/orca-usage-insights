@@ -272,6 +272,18 @@ table.bd { width: 100%; border-collapse: collapse; font-variant-numeric: tabular
 .filter-btn .count[hidden] { display: none; }
 .tiles { grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
 
+/* --- 1.3.0: request log, throughput --- */
+#log:not([hidden]) { display: flex; flex-direction: column; gap: 16px; }
+/* 100 rows stay scannable: dense cells, and the model column does not take the table's width. */
+#log-table th, #log-table td { padding: 5px 8px; font-size: 12px; }
+#log-table th:nth-child(-n+3) { text-align: left; }
+#log-table td.name { width: auto; white-space: nowrap; }
+#log-table td:nth-child(3) { text-align: left; }
+#log-table td.speed { font-variant-numeric: tabular-nums; }
+#log-speed .chart { margin-top: 4px; }
+.log-foot { display: flex; align-items: center; gap: 10px; }
+.log-foot .btn[hidden] { display: none; }
+
 /* --- 1.2.0: Breakdown view, price line, dialogs --- */
 .small { font-size: 11px; }
 #bd:not([hidden]), #bd-body:not([hidden]) { display: flex; flex-direction: column; gap: 16px; }
@@ -446,7 +458,7 @@ button.src:disabled { cursor: progress; opacity: .7; }
 
   <nav class="controls" aria-label="筛选">
     <div class="seg" role="radiogroup" aria-label="视图" id="view">
-      <button role="radio" data-view="usage" aria-checked="true">用量</button><button role="radio" data-view="breakdown" aria-checked="false" tabindex="-1">拆解</button>
+      <button role="radio" data-view="usage" aria-checked="true">用量</button><button role="radio" data-view="log" aria-checked="false" tabindex="-1">明细</button><button role="radio" data-view="breakdown" aria-checked="false" tabindex="-1">拆解</button>
     </div>
     <div class="seg" role="radiogroup" aria-label="时间范围" id="ranges">
       <button role="radio" data-range="1d" aria-checked="false" tabindex="-1">今天</button><button role="radio" data-range="7d" aria-checked="true">7 天</button><button role="radio" data-range="30d" aria-checked="false" tabindex="-1">30 天</button><button role="radio" data-range="90d" aria-checked="false" tabindex="-1">90 天</button><button role="radio" data-range="all" aria-checked="false" tabindex="-1">全部</button><button role="radio" data-range="custom" aria-checked="false" tabindex="-1" aria-controls="custom-range">自定义</button>
@@ -577,6 +589,28 @@ button.src:disabled { cursor: progress; opacity: .7; }
 
     <p class="footnote muted">读自本机的 Claude Code、Codex、Pi 转录与本地 OpenCode 数据库（含 Orca 的账号目录），以及设置里添加的文件夹和 SSH 主机。多个账号的历史会合并。用量数据不会发送到任何地方。成本按 API 标价估算。</p>
   </section>
+  <section id="log" aria-label="明细" hidden>
+    <p id="log-status" class="status" role="status" hidden></p>
+    <article class="card">
+      <header><h2 id="log-hour-title">每小时用量与吞吐</h2><span class="pill" id="log-hour-pill"></span></header>
+      <p class="muted" id="log-hour-sub"></p>
+      <div id="log-hour"></div>
+      <ul class="legend" id="log-hour-legend"></ul>
+      <div id="log-speed"></div>
+    </article>
+    <article class="card">
+      <header><h2>逐笔请求</h2><span class="pill" id="log-count"></span></header>
+      <p class="muted" id="log-sub"></p>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="逐笔请求，左右滚动查看更多列">
+        <table class="bd" id="log-table"></table>
+      </div>
+      <footer class="log-foot">
+        <button class="btn" id="log-more" hidden>加载更多</button>
+        <span class="muted small" id="log-more-hint"></span>
+      </footer>
+    </article>
+  </section>
+
   <section id="bd" aria-label="拆解" hidden>
     <p id="bd-status" class="status" role="status" hidden></p>
     <button id="bd-stale" class="stale" hidden>此视图之后有新的用量 · 更新</button>
@@ -1044,6 +1078,112 @@ function segmentBar(segments, { width = 360, height = 10, id = 'sbar' } = {}) {
   return svg(width, height, body, label)
 }
 
+// Hour-of-day bars for the request log: 24 slots, each the tokens spent in that local hour. Same
+// stacking and tooltips as the daily chart, so a day can be read at a different zoom.
+function hourBars(hours, { keys = TOKEN_KEYS, width = 360, height = 170, id = 'hb', colors = TOKEN_COLORS, labels = TOKEN_LABELS, fmt = null } = {}) {
+  const label = '每小时用量'
+  if (!hours?.length) return empty(width, height, label)
+  const top = 18
+  const bottom = 20
+  const plotH = height - top - bottom
+  const totals = hours.map((h) => keys.reduce((s, k) => s + (h[k] || 0), 0))
+  const max = Math.max(...totals)
+  if (max <= 0) return empty(width, height, label)
+  const slot = width / hours.length
+  const barW = Math.max(2, Math.min(24, slot * 0.66))
+  const radius = Math.min(4, barW / 2)
+  let defs = ''
+  let body = `<line x1="0" x2="${width}" y1="${top + plotH + 0.5}" y2="${top + plotH + 0.5}" class="axis"/>`
+  body += `<text x="0" y="11" class="t-muted">${esc(fmt ? fmt(max) : compact(max))}</text>`
+  hours.forEach((h, i) => {
+    const x = i * slot + (slot - barW) / 2
+    const total = totals[i]
+    const barH = (total / max) * plotH
+    const show = (v) => (fmt ? fmt(v) : v)
+    const rows = keys.map((k) => [labels[k] ?? k, show(h[k] || 0)])
+    // The throughput belongs to the hour, not to a segment, so it goes in the same tooltip.
+    if (h.tokPerSec != null) rows.push(['输出吞吐', `${h.tokPerSec} Token/秒`])
+    const tip = esc(JSON.stringify({ title: `${h.hour}时`, rows, total: keys.length > 1 ? show(total) : undefined }))
+    body += `<g class="mark" data-tip="${tip}">`
+    body += `<rect x="${i * slot}" y="${top}" width="${slot}" height="${plotH}" class="hit"/>`
+    if (barH > 0) {
+      const cid = `${id}-h${i}`
+      defs += `<clipPath id="${cid}"><rect x="${x}" y="${top + plotH - barH}" width="${barW}" height="${barH + radius}" rx="${radius}"/></clipPath>`
+      body += `<g clip-path="url(#${cid})">`
+      let y = top + plotH
+      let drawn = 0
+      for (const k of keys) {
+        const v = h[k] || 0
+        if (v <= 0) continue
+        const sh = (v / max) * plotH
+        y -= sh
+        const gap = drawn++ > 0 ? Math.min(2, sh / 2) : 0
+        body += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(0, sh - gap)}" fill="${colors[k] ?? 'var(--s1)'}"/>`
+      }
+      body += `</g>`
+    }
+    body += `</g>`
+  })
+  for (const i of hourTicks(hours.length, slot)) {
+    body += `<text x="${(i * slot + slot / 2).toFixed(1)}" y="${top + plotH + 14}" class="t-muted" text-anchor="middle">${i}时</text>`
+  }
+  return svg(width, height, `<defs>${defs}</defs>${body}`, label)
+}
+
+// Which hours get an axis label: every 3rd hour, and the last one so the axis ends.
+function hourTicks(n, slotPx) {
+  const step = Math.max(1, Math.ceil(34 / Math.max(1, slotPx)) * 1)
+  const out = []
+  for (let i = 0; i < n; i++) if (i % Math.max(step, 3) === 0) out.push(i)
+  if (out[out.length - 1] !== n - 1) out.push(n - 1)
+  return out
+}
+
+// Throughput per hour as a line with dots, skipping hours without a measured request rather than
+// drawing a zero. The axis tops out at a round number so a spike doesn't flatten the rest.
+function speedTrend(hours, { width = 360, height = 110, id = 'sp' } = {}) {
+  const label = '每小时吞吐'
+  const values = (hours || []).map((h) => h.tokPerSec)
+  const known = values.filter((v) => v != null)
+  if (!known.length) return empty(width, height, label)
+  const left = 36
+  const top = 10
+  const bottom = 18
+  const plotW = width - left
+  const plotH = height - top - bottom
+  const max = niceMax(Math.max(...known))
+  const xOf = (i) => left + (hours.length === 1 ? plotW / 2 : (i / (hours.length - 1)) * plotW)
+  const yOf = (v) => top + plotH - (v / max) * plotH
+  let body = `<line x1="${left}" x2="${width}" y1="${top + plotH + 0.5}" y2="${top + plotH + 0.5}" class="axis"/>`
+  for (const level of [0.5, 1]) {
+    const y = yOf(max * level)
+    body += `<line x1="${left}" x2="${width}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" class="grid"/>`
+    body += `<text x="${left - 6}" y="${(y + 3).toFixed(1)}" class="t-faint" text-anchor="end">${esc(compact(max * level))}</text>`
+  }
+  // One polyline per run of hours that have a throughput, so gaps stay gaps.
+  let run = []
+  const flush = () => {
+    if (run.length > 1) body += `<polyline points="${run.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')}" fill="none" class="spark" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`
+    run = []
+  }
+  hours.forEach((h, i) => {
+    if (h.tokPerSec == null) {
+      flush()
+      return
+    }
+    const x = xOf(i)
+    const y = yOf(h.tokPerSec)
+    run.push([x, y])
+    const tip = esc(JSON.stringify({ title: `${h.hour}时`, rows: [['输出吞吐', `${h.tokPerSec} Token/秒`], ['输出 Token', h.output || 0], ['请求', h.requests || 0]] }))
+    body += `<g class="mark" data-tip="${tip}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" class="hit"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5" class="spark-dot"/></g>`
+  })
+  flush()
+  for (const i of hourTicks(hours.length, plotW / hours.length)) {
+    body += `<text x="${xOf(i).toFixed(1)}" y="${height - 4}" class="t-muted" text-anchor="middle">${i}时</text>`
+  }
+  return svg(width, height, body, label)
+}
+
 // src/panel/art.mjs
 // Generative pixel-art banner. The scene is deterministic for a given report:
 // the skyline follows the daily series, lit windows follow output share, stars count the
@@ -1452,8 +1592,9 @@ function syncBody(result) {
 
 const $ = (id) => document.getElementById(id)
 const host = globalThis.orca
-const state = { view: 'usage', range: '7d', defaultRange: '7d', rangePicked: false, startDate: '', endDate: '', models: null, modelSearch: '', provider: 'all', host: 'all', scope: 'all', cache: true, metric: 'tokens', breakdown: 'model', sort: 'default', report: null, busy: false, bd: null, bdPath: [], prices: null, sync: null }
+const state = { view: 'usage', range: '7d', defaultRange: '7d', rangePicked: false, startDate: '', endDate: '', models: null, modelSearch: '', provider: 'all', host: 'all', scope: 'all', cache: true, metric: 'tokens', breakdown: 'model', sort: 'default', report: null, busy: false, bd: null, bdPath: [], log: null, logBusy: false, logAgain: false, prices: null, sync: null }
 const NOTE_KEY = 'usage-insights.prices-note.1.2.0'
+const LOG_PAGE = 100
 
 function money(n) {
   const v = Number(n) || 0
@@ -1819,12 +1960,12 @@ function render() {
   if (focusGroup && !$('filters-pop').hidden) $(focusGroup)?.querySelector('[aria-checked="true"]')?.focus()
 
   const empty = t.turns === 0
-  $('status').hidden = !empty || state.view === 'breakdown'
+  $('status').hidden = !empty || state.view !== 'usage'
   if (empty) {
     $('status').textContent = '当所选日期与筛选下没有用量记录。换个时间范围、选“全部模型”，或重置筛选。'
     $('status').classList.remove('error')
   }
-  $('content').hidden = state.view === 'breakdown'
+  $('content').hidden = state.view !== 'usage'
 
   const daySpark = sparkline(r.daily.map((d) => keys.reduce((s, k) => s + (d[k] || 0), 0)))
   $('tiles').innerHTML = [
@@ -1893,6 +2034,7 @@ function renderOverview(r, keys, widthOf) {
     ['未缓存输入', compact(t.input)],
     ['输出', compact(t.output)],
     ['缓存节省', t.cacheSavingsUsd === undefined ? '—' : money(t.cacheSavingsUsd)],
+    ['输出吞吐', t.tokPerSec == null ? '—' : `${t.tokPerSec} Token/秒`],
   ]
   $('totals').innerHTML = cells.map(([k, v]) => `<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')
   const segs = keys.map((k) => ({ label: TOKEN_LABELS[k], value: t[k] || 0, color: TOKEN_COLORS[k] }))
@@ -1962,15 +2104,18 @@ function renderBreakdown(r) {
 
 function renderView() {
   const bd = state.view === 'breakdown'
+  const log = state.view === 'log'
   for (const b of $('view').querySelectorAll('button')) b.setAttribute('aria-checked', String(b.dataset.view === state.view))
+  // Breakdown splits cost, so it drops the metric and model controls; the log keeps them.
   $('metric').hidden = bd
   $('sec-cache').hidden = bd
   $('sec-models').hidden = bd
   $('selection-summary').hidden = bd
   renderChips()
-  $('content').hidden = bd || !state.report
+  $('content').hidden = bd || log || !state.report
   $('bd').hidden = !bd
-  if (bd) $('status').hidden = true
+  $('log').hidden = !log
+  if (bd || log) $('status').hidden = true
   $('prices').hidden = !state.prices
   $('prices').innerHTML = priceLine(state.prices)
 }
@@ -2035,6 +2180,84 @@ function renderBreakdownView() {
   $('bd-not').hidden = !not
   $('bd-not').innerHTML = not
   $('bd-foot').textContent = legend(v)
+}
+
+// One page of individual requests, newest first, plus an hour-of-day chart. The hour chart is the
+// whole window folded by hour, or a single day when the range is that day, so narrowing the dates
+// turns it into a timeline of that day. More pages come from the same query with a bigger offset.
+async function loadLog({ more = false } = {}) {
+  if (state.logBusy) {
+    state.logAgain = true
+    return
+  }
+  state.logBusy = true
+  const offset = more && state.log ? state.log.rows.length : 0
+  if (!state.log) {
+    $('log-status').textContent = '正在读取逐笔请求…'
+    $('log-status').classList.remove('error')
+    $('log-status').hidden = false
+    $('log-table').innerHTML = ''
+  }
+  try {
+    const page = await request('usage.log', { ...filterInput({ usage: true }), offset, limit: LOG_PAGE })
+    state.log = more && state.log ? { ...page, offset: 0, rows: [...state.log.rows, ...page.rows] } : page
+    renderLogView()
+    $('live').textContent = `已读取 ${state.log.rows.length.toLocaleString()} 笔请求，共 ${state.log.total.toLocaleString()} 笔。`
+  } catch (err) {
+    $('log-status').textContent = `读取明细失败：${err?.message || err}`
+    $('log-status').classList.add('error')
+    $('log-status').hidden = false
+  } finally {
+    state.logBusy = false
+    if (state.logAgain) {
+      state.logAgain = false
+      setTimeout(() => loadLog(), 0)
+    }
+  }
+}
+
+function renderLogView() {
+  const page = state.log
+  if (!page) return
+  const empty = page.total === 0
+  $('log-status').hidden = !empty
+  if (empty) {
+    $('log-status').textContent = '当所选日期与筛选下没有请求记录。换个时间范围，或重置筛选。'
+    $('log-status').classList.remove('error')
+  }
+  const keys = state.cache ? TOKEN_KEYS : ['input', 'output']
+  const width = () => Math.max(280, Math.round($('log-hour').clientWidth || 0))
+  const oneDay = state.range === 'custom' && state.startDate !== '' && state.startDate === state.endDate
+  $('log-hour-title').textContent = oneDay ? `${state.startDate} 每小时用量与吞吐` : '每小时用量与吞吐'
+  const t = page.totals
+  $('log-hour-pill').textContent = page.total ? `${page.total.toLocaleString('en-US')} 笔` : ''
+  $('log-hour-sub').textContent = oneDay
+    ? '这一天的每个小时里用了多少 Token，以及每小时的平均输出速度。'
+    : '把区间内的每一笔请求按本机时区的整点归并。'
+
+  const hours = page.hourly || []
+  $('log-hour').innerHTML = hourBars(hours, { keys, width: width(), height: 160 })
+  $('log-hour-legend').innerHTML = keys.map((k) => legendItem(TOKEN_COLORS[k], TOKEN_LABELS[k], compact(t[k] ?? 0))).join('')
+  const withSpeed = hours.some((h) => h.tokPerSec != null)
+  $('log-speed').innerHTML = withSpeed ? speedTrend(hours, { width: width(), height: 104 }) : '<p class="muted small">没有可用的吞吐数据：只有记录了每次请求耗时的转录（目前是 Pi）才有吞吐，其余来源只计 Token。</p>'
+
+  const exact = (n) => Number(n || 0).toLocaleString('en-US')
+  const head = '<thead><tr><th>时间</th><th>模型</th><th>项目</th><th>输入</th><th>输出</th><th>缓存读</th><th>成本</th><th>Token/秒</th></tr></thead>'
+  const rows = page.rows.map((row) => {
+    const time = new Date(row.ms).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    const dot = `<span class="sw" style="background:${providerColor(row.provider)}"></span>`
+    const speed = row.tokPerSec == null ? '<span class="muted">—</span>' : `${row.tokPerSec}`
+    return `<tr><td class="muted">${esc(time)}</td><td class="name"><span class="nm">${dot}${esc(row.model || '未知模型')}</span></td><td class="muted">${esc(row.project || '—')}</td><td class="muted" title="${esc(exact(row.input))}">${esc(compact(row.input))}</td><td title="${esc(exact(row.output))}">${esc(compact(row.output))}</td><td class="muted" title="${esc(exact(row.cacheRead))}">${esc(compact(row.cacheRead))}</td><td${row.usd == null ? ' class="muted"' : ''}>${row.usd == null ? '—' : money(row.usd)}</td><td${row.tokPerSec == null ? '' : ' class="speed"'}>${speed}</td></tr>`
+  }).join('')
+  $('log-table').innerHTML = head + `<tbody>${rows || '<tr><td colspan="8" class="muted" style="text-align:center">当所选日期与筛选下没有请求记录。</td></tr>'}</tbody>`
+
+  const shown = page.rows.length
+  $('log-sub').textContent = `${shown.toLocaleString('en-US')} / ${page.total.toLocaleString('en-US')} 笔（最新在前）· 时间按本机时区 · 吞吐只算有耗时的请求`
+  $('log-count').textContent = page.total ? `${shown.toLocaleString('en-US')} / ${page.total.toLocaleString('en-US')}` : ''
+  const more = shown < page.total
+  $('log-more').hidden = !more
+  $('log-more').textContent = `加载更多（还有 ${(page.total - shown).toLocaleString('en-US')} 笔）`
+  $('log-more-hint').textContent = more ? '' : shown ? '已到最早的一笔。' : ''
 }
 
 // The Default range setting picks the range the panel opens on and returns to. A range the person
@@ -2172,6 +2395,7 @@ function bindBreakdown() {
     state.view = b.dataset.view
     renderView()
     if (state.view === 'breakdown') loadBreakdown()
+    else if (state.view === 'log') loadLog()
     else if (state.report) render()
     else load()
   })
@@ -2192,6 +2416,7 @@ function bindBreakdown() {
     if (b) openExplain(b.dataset.explain)
   })
   $('bd-stale').addEventListener('click', () => load())
+  $('log-more').addEventListener('click', () => loadLog({ more: true }))
   $('prices').addEventListener('click', (e) => {
     const b = e.target.closest('button[data-price]')
     if (b) priceAction(b.dataset.price)
@@ -2213,6 +2438,11 @@ function bindBreakdown() {
 // A finished Breakdown offers an update instead of reordering under the reader.
 function onChanged() {
   loadPrices()
+  if (state.view === 'log') {
+    state.log = null
+    loadLog()
+    return load()
+  }
   if (state.view !== 'breakdown') return load()
   if (state.bdLoading || !state.bd) return loadBreakdown()
   $('bd-stale').hidden = false

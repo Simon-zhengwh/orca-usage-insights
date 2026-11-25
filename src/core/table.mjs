@@ -1,13 +1,15 @@
 // Usage records as columns: typed arrays plus a dictionary of distinct strings instead of an object per
 // record. Pure: no Node built-in or Orca imports. ms is epoch ms, NaN when it did not parse. Counts are
 // Uint32Array until a count is not a whole u32, then Float64Array. Name ids are -1 for no string.
-// replace keeps the row's key. `version` counts pushes and replaces; `replaced` lists rows replaced since `epoch`.
+// durationMs is how long the request took, NaN when the transcript does not record it, so the panel can
+// show a throughput only where it was measured. replace keeps the row's key.
+// `version` counts pushes and replaces; `replaced` lists rows replaced since `epoch`.
 
 import { timestampParser } from './time.mjs';
 
 export const TOKEN_FIELDS = Object.freeze(['input', 'output', 'cacheRead', 'cacheWrite', 'cacheWrite1h']);
 export const NAME_FIELDS = Object.freeze(['provider', 'model', 'project', 'sessionId', 'cwd', 'host']);
-export const COLUMNS = Object.freeze(['ms', ...TOKEN_FIELDS, ...NAME_FIELDS]);
+export const COLUMNS = Object.freeze(['ms', 'durationMs', ...TOKEN_FIELDS, ...NAME_FIELDS]);
 const U32_MAX = 0xffffffff;
 // Past this many replaced rows the log restarts under a new epoch; a reader on the old one rereads the table.
 const REPLACED_LOG_MAX = 4096;
@@ -41,6 +43,7 @@ export class RecordTable {
     this.length = 0;
     this.dict = dict;
     this.ms = new Float64Array(capacity);
+    this.durationMs = new Float64Array(capacity);
     this.input = new Uint32Array(capacity);
     this.output = new Uint32Array(capacity);
     this.cacheRead = new Uint32Array(capacity);
@@ -63,18 +66,18 @@ export class RecordTable {
     return this.dict.list;
   }
 
-  push(key, ms, provider, model, project, sessionId, cwd, host, input, output, cacheRead, cacheWrite, cacheWrite1h) {
+  push(key, ms, provider, model, project, sessionId, cwd, host, input, output, cacheRead, cacheWrite, cacheWrite1h, durationMs) {
     const i = this.length;
     if (i === this.ms.length) this.grow(Math.max(16, i * 2));
     this.length = i + 1;
     this.keys.push(typeof key === 'string' ? key : undefined);
-    this.write(i, ms, provider, model, project, sessionId, cwd, host, input, output, cacheRead, cacheWrite, cacheWrite1h);
+    this.write(i, ms, provider, model, project, sessionId, cwd, host, input, output, cacheRead, cacheWrite, cacheWrite1h, durationMs);
     this.version++;
     return i;
   }
 
-  replace(i, ms, provider, model, project, sessionId, cwd, host, input, output, cacheRead, cacheWrite, cacheWrite1h) {
-    this.write(i, ms, provider, model, project, sessionId, cwd, host, input, output, cacheRead, cacheWrite, cacheWrite1h);
+  replace(i, ms, provider, model, project, sessionId, cwd, host, input, output, cacheRead, cacheWrite, cacheWrite1h, durationMs) {
+    this.write(i, ms, provider, model, project, sessionId, cwd, host, input, output, cacheRead, cacheWrite, cacheWrite1h, durationMs);
     this.version++;
     if (this.replaced.length >= REPLACED_LOG_MAX) {
       this.replaced = [];
@@ -83,9 +86,10 @@ export class RecordTable {
     this.replaced.push(i);
   }
 
-  write(i, ms, provider, model, project, sessionId, cwd, host, input, output, cacheRead, cacheWrite, cacheWrite1h) {
+  write(i, ms, provider, model, project, sessionId, cwd, host, input, output, cacheRead, cacheWrite, cacheWrite1h, durationMs) {
     const dict = this.dict;
     this.ms[i] = ms;
+    this.durationMs[i] = durationOf(durationMs);
     this.provider[i] = dict.id(provider);
     this.model[i] = dict.id(model);
     this.project[i] = dict.id(project);
@@ -150,6 +154,8 @@ export class RecordTable {
     add('project');
     add('sessionId');
     for (const field of TOKEN_FIELDS) record[field] = this[field][i];
+    const duration = this.durationMs[i];
+    if (Number.isFinite(duration)) record.durationMs = duration;
     add('cwd');
     add('host');
     return record;
@@ -167,7 +173,7 @@ export function tableFromRecords(records, dict) {
   const table = new RecordTable(records.length, dict instanceof NameDict ? dict : new NameDict());
   const parse = timestampParser();
   for (const r of records) {
-    table.push(r.key, parse(r.ts), r.provider, r.model, r.project, r.sessionId, r.cwd, r.host, r.input, r.output, r.cacheRead, r.cacheWrite, r.cacheWrite1h);
+    table.push(r.key, parse(r.ts), r.provider, r.model, r.project, r.sessionId, r.cwd, r.host, r.input, r.output, r.cacheRead, r.cacheWrite, r.cacheWrite1h, r.durationMs);
   }
   table.frozen = true;
   return table;
@@ -180,6 +186,13 @@ export function asTable(records) {
   let table = converted.get(records);
   if (table === undefined) converted.set(records, (table = tableFromRecords(records)));
   return table;
+}
+
+// A duration is in milliseconds and only meaningful when finite and positive; anything else means the
+// transcript did not record one.
+export function durationOf(value) {
+  const n = typeof value === 'number' ? value : NaN;
+  return Number.isFinite(n) && n > 0 ? n : NaN;
 }
 
 export function distinctNames(table, field) {

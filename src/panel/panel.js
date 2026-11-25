@@ -1,13 +1,14 @@
 // Panel controller: asks the worker for a Report and renders it. Knows nothing about transcripts.
-import { stackedBars, calendarHeatmap, punchCard, donut, hBars, sparkline, areaTrend, segmentBar, providerColor, compact, esc, TOKEN_KEYS, TOKEN_LABELS, TOKEN_COLORS, PROVIDER_LABELS } from './charts.mjs'
+import { stackedBars, hourBars, speedTrend, calendarHeatmap, punchCard, donut, hBars, sparkline, areaTrend, segmentBar, providerColor, compact, esc, TOKEN_KEYS, TOKEN_LABELS, TOKEN_COLORS, PROVIDER_LABELS } from './charts.mjs'
 import { pixelBanner } from './art.mjs'
 import { headline, tree, findings, notAnalysed, legend, priceLine, syncBody, changedSyncRows } from './breakdown.js'
 import { normalizeQuery, localDay, dayKey, MIN_USAGE_DATE, RANGE_DAYS } from '../core/query.mjs'
 
 const $ = (id) => document.getElementById(id)
 const host = globalThis.orca
-const state = { view: 'usage', range: '7d', defaultRange: '7d', rangePicked: false, startDate: '', endDate: '', models: null, modelSearch: '', provider: 'all', host: 'all', scope: 'all', cache: true, metric: 'tokens', breakdown: 'model', sort: 'default', report: null, busy: false, bd: null, bdPath: [], prices: null, sync: null }
+const state = { view: 'usage', range: '7d', defaultRange: '7d', rangePicked: false, startDate: '', endDate: '', models: null, modelSearch: '', provider: 'all', host: 'all', scope: 'all', cache: true, metric: 'tokens', breakdown: 'model', sort: 'default', report: null, busy: false, bd: null, bdPath: [], log: null, logBusy: false, logAgain: false, prices: null, sync: null }
 const NOTE_KEY = 'usage-insights.prices-note.1.2.0'
+const LOG_PAGE = 100
 
 function money(n) {
   const v = Number(n) || 0
@@ -373,12 +374,12 @@ export function render() {
   if (focusGroup && !$('filters-pop').hidden) $(focusGroup)?.querySelector('[aria-checked="true"]')?.focus()
 
   const empty = t.turns === 0
-  $('status').hidden = !empty || state.view === 'breakdown'
+  $('status').hidden = !empty || state.view !== 'usage'
   if (empty) {
     $('status').textContent = '当所选日期与筛选下没有用量记录。换个时间范围、选“全部模型”，或重置筛选。'
     $('status').classList.remove('error')
   }
-  $('content').hidden = state.view === 'breakdown'
+  $('content').hidden = state.view !== 'usage'
 
   const daySpark = sparkline(r.daily.map((d) => keys.reduce((s, k) => s + (d[k] || 0), 0)))
   $('tiles').innerHTML = [
@@ -447,6 +448,7 @@ function renderOverview(r, keys, widthOf) {
     ['未缓存输入', compact(t.input)],
     ['输出', compact(t.output)],
     ['缓存节省', t.cacheSavingsUsd === undefined ? '—' : money(t.cacheSavingsUsd)],
+    ['输出吞吐', t.tokPerSec == null ? '—' : `${t.tokPerSec} Token/秒`],
   ]
   $('totals').innerHTML = cells.map(([k, v]) => `<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')
   const segs = keys.map((k) => ({ label: TOKEN_LABELS[k], value: t[k] || 0, color: TOKEN_COLORS[k] }))
@@ -516,15 +518,18 @@ function renderBreakdown(r) {
 
 function renderView() {
   const bd = state.view === 'breakdown'
+  const log = state.view === 'log'
   for (const b of $('view').querySelectorAll('button')) b.setAttribute('aria-checked', String(b.dataset.view === state.view))
+  // Breakdown splits cost, so it drops the metric and model controls; the log keeps them.
   $('metric').hidden = bd
   $('sec-cache').hidden = bd
   $('sec-models').hidden = bd
   $('selection-summary').hidden = bd
   renderChips()
-  $('content').hidden = bd || !state.report
+  $('content').hidden = bd || log || !state.report
   $('bd').hidden = !bd
-  if (bd) $('status').hidden = true
+  $('log').hidden = !log
+  if (bd || log) $('status').hidden = true
   $('prices').hidden = !state.prices
   $('prices').innerHTML = priceLine(state.prices)
 }
@@ -589,6 +594,84 @@ function renderBreakdownView() {
   $('bd-not').hidden = !not
   $('bd-not').innerHTML = not
   $('bd-foot').textContent = legend(v)
+}
+
+// One page of individual requests, newest first, plus an hour-of-day chart. The hour chart is the
+// whole window folded by hour, or a single day when the range is that day, so narrowing the dates
+// turns it into a timeline of that day. More pages come from the same query with a bigger offset.
+async function loadLog({ more = false } = {}) {
+  if (state.logBusy) {
+    state.logAgain = true
+    return
+  }
+  state.logBusy = true
+  const offset = more && state.log ? state.log.rows.length : 0
+  if (!state.log) {
+    $('log-status').textContent = '正在读取逐笔请求…'
+    $('log-status').classList.remove('error')
+    $('log-status').hidden = false
+    $('log-table').innerHTML = ''
+  }
+  try {
+    const page = await request('usage.log', { ...filterInput({ usage: true }), offset, limit: LOG_PAGE })
+    state.log = more && state.log ? { ...page, offset: 0, rows: [...state.log.rows, ...page.rows] } : page
+    renderLogView()
+    $('live').textContent = `已读取 ${state.log.rows.length.toLocaleString()} 笔请求，共 ${state.log.total.toLocaleString()} 笔。`
+  } catch (err) {
+    $('log-status').textContent = `读取明细失败：${err?.message || err}`
+    $('log-status').classList.add('error')
+    $('log-status').hidden = false
+  } finally {
+    state.logBusy = false
+    if (state.logAgain) {
+      state.logAgain = false
+      setTimeout(() => loadLog(), 0)
+    }
+  }
+}
+
+function renderLogView() {
+  const page = state.log
+  if (!page) return
+  const empty = page.total === 0
+  $('log-status').hidden = !empty
+  if (empty) {
+    $('log-status').textContent = '当所选日期与筛选下没有请求记录。换个时间范围，或重置筛选。'
+    $('log-status').classList.remove('error')
+  }
+  const keys = state.cache ? TOKEN_KEYS : ['input', 'output']
+  const width = () => Math.max(280, Math.round($('log-hour').clientWidth || 0))
+  const oneDay = state.range === 'custom' && state.startDate !== '' && state.startDate === state.endDate
+  $('log-hour-title').textContent = oneDay ? `${state.startDate} 每小时用量与吞吐` : '每小时用量与吞吐'
+  const t = page.totals
+  $('log-hour-pill').textContent = page.total ? `${page.total.toLocaleString('en-US')} 笔` : ''
+  $('log-hour-sub').textContent = oneDay
+    ? '这一天的每个小时里用了多少 Token，以及每小时的平均输出速度。'
+    : '把区间内的每一笔请求按本机时区的整点归并。'
+
+  const hours = page.hourly || []
+  $('log-hour').innerHTML = hourBars(hours, { keys, width: width(), height: 160 })
+  $('log-hour-legend').innerHTML = keys.map((k) => legendItem(TOKEN_COLORS[k], TOKEN_LABELS[k], compact(t[k] ?? 0))).join('')
+  const withSpeed = hours.some((h) => h.tokPerSec != null)
+  $('log-speed').innerHTML = withSpeed ? speedTrend(hours, { width: width(), height: 104 }) : '<p class="muted small">没有可用的吞吐数据：只有记录了每次请求耗时的转录（目前是 Pi）才有吞吐，其余来源只计 Token。</p>'
+
+  const exact = (n) => Number(n || 0).toLocaleString('en-US')
+  const head = '<thead><tr><th>时间</th><th>模型</th><th>项目</th><th>输入</th><th>输出</th><th>缓存读</th><th>成本</th><th>Token/秒</th></tr></thead>'
+  const rows = page.rows.map((row) => {
+    const time = new Date(row.ms).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    const dot = `<span class="sw" style="background:${providerColor(row.provider)}"></span>`
+    const speed = row.tokPerSec == null ? '<span class="muted">—</span>' : `${row.tokPerSec}`
+    return `<tr><td class="muted">${esc(time)}</td><td class="name"><span class="nm">${dot}${esc(row.model || '未知模型')}</span></td><td class="muted">${esc(row.project || '—')}</td><td class="muted" title="${esc(exact(row.input))}">${esc(compact(row.input))}</td><td title="${esc(exact(row.output))}">${esc(compact(row.output))}</td><td class="muted" title="${esc(exact(row.cacheRead))}">${esc(compact(row.cacheRead))}</td><td${row.usd == null ? ' class="muted"' : ''}>${row.usd == null ? '—' : money(row.usd)}</td><td${row.tokPerSec == null ? '' : ' class="speed"'}>${speed}</td></tr>`
+  }).join('')
+  $('log-table').innerHTML = head + `<tbody>${rows || '<tr><td colspan="8" class="muted" style="text-align:center">当所选日期与筛选下没有请求记录。</td></tr>'}</tbody>`
+
+  const shown = page.rows.length
+  $('log-sub').textContent = `${shown.toLocaleString('en-US')} / ${page.total.toLocaleString('en-US')} 笔（最新在前）· 时间按本机时区 · 吞吐只算有耗时的请求`
+  $('log-count').textContent = page.total ? `${shown.toLocaleString('en-US')} / ${page.total.toLocaleString('en-US')}` : ''
+  const more = shown < page.total
+  $('log-more').hidden = !more
+  $('log-more').textContent = `加载更多（还有 ${(page.total - shown).toLocaleString('en-US')} 笔）`
+  $('log-more-hint').textContent = more ? '' : shown ? '已到最早的一笔。' : ''
 }
 
 // The Default range setting picks the range the panel opens on and returns to. A range the person
@@ -726,6 +809,7 @@ function bindBreakdown() {
     state.view = b.dataset.view
     renderView()
     if (state.view === 'breakdown') loadBreakdown()
+    else if (state.view === 'log') loadLog()
     else if (state.report) render()
     else load()
   })
@@ -746,6 +830,7 @@ function bindBreakdown() {
     if (b) openExplain(b.dataset.explain)
   })
   $('bd-stale').addEventListener('click', () => load())
+  $('log-more').addEventListener('click', () => loadLog({ more: true }))
   $('prices').addEventListener('click', (e) => {
     const b = e.target.closest('button[data-price]')
     if (b) priceAction(b.dataset.price)
@@ -767,6 +852,11 @@ function bindBreakdown() {
 // A finished Breakdown offers an update instead of reordering under the reader.
 function onChanged() {
   loadPrices()
+  if (state.view === 'log') {
+    state.log = null
+    loadLog()
+    return load()
+  }
   if (state.view !== 'breakdown') return load()
   if (state.bdLoading || !state.bd) return loadBreakdown()
   $('bd-stale').hidden = false

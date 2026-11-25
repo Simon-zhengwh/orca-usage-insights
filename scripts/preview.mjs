@@ -1,6 +1,6 @@
 // Dev only: renders the built panel with real local usage, through the worker's own handlers,
 // so it can be opened or screenshotted outside Orca.
-// Usage: node scripts/preview.mjs [out.html] [--light] [--cost] [--breakdown] [--sync] [--codex dir] [--ssh host,...] [--folders a,b] [--worktrees a,b]
+// Usage: node scripts/preview.mjs [out.html] [--light] [--cost] [--log] [--breakdown] [--sync] [--codex dir] [--ssh host,...] [--folders a,b] [--worktrees a,b]
 import { readFileSync, writeFileSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -15,6 +15,7 @@ const flag = (name) => {
 const light = args.includes('--light')
 const cost = args.includes('--cost')
 const showBreakdown = args.includes('--breakdown')
+const showLog = args.includes('--log')
 const out = args.find((a, i) => !a.startsWith('--') && !(i > 0 && args[i - 1].startsWith('--') && ['--ssh', '--folders', '--worktrees', '--codex'].includes(args[i - 1]))) || join(tmpdir(), 'usage-insights-preview.html')
 const list = (v) => (v ? v.split(',').map((s) => s.trim()).filter(Boolean) : [])
 const settings = { extraClaudeFolders: list(flag('--folders')).join('\n'), extraCodexFolders: list(flag('--codex')).join('\n'), sshHosts: list(flag('--ssh')).join('\n') }
@@ -48,12 +49,16 @@ for (const range of ['1d', '7d', '30d', '90d', 'all']) {
   for (const f of top.findings || []) explains[f.id] = await handlers.get('usage.explain')({ range, findingId: f.id }, {})
   if (range === '7d') console.log(`breakdown ready in ${Date.now() - t0} ms`)
 }
+// One full page per range, sliced by the shim, so 明细 and 加载更多 both work offline.
+const logs = {}
+for (const range of ['1d', '7d', '30d', '90d', 'all']) logs[range] = await handlers.get('usage.log')({ range, limit: 500 }, {})
 const prices = await handlers.get('prices.status')(undefined, {})
 const sync = args.includes('--sync') ? await handlers.get('prices.sync')(undefined, {}) : null
 await worker.stop()
-const shim = `<script>window.__USAGE_PREVIEW__ = (() => { const R = ${JSON.stringify(reports)}; const V = ${JSON.stringify(views)}; const E = ${JSON.stringify(explains)}; const P = ${JSON.stringify(prices)}; const S = ${JSON.stringify(sync)}; return async (name, input = {}) => {
+const shim = `<script>window.__USAGE_PREVIEW__ = (() => { const R = ${JSON.stringify(reports)}; const G = ${JSON.stringify(logs)}; const V = ${JSON.stringify(views)}; const E = ${JSON.stringify(explains)}; const P = ${JSON.stringify(prices)}; const S = ${JSON.stringify(sync)}; return async (name, input = {}) => {
   if (name === 'prices.status') return P
   if (name === 'prices.sync' && S) return S
+  if (name === 'usage.log') { const page = G[input.range] || G['7d']; const offset = input.offset || 0; const limit = input.limit || 100; return { ...page, offset, limit, rows: page.rows.slice(offset, offset + limit) } }
   if (name === 'usage.explain') return E[input.findingId] || { prompt: 'Not captured in this preview.', estTokens: 0 }
   if (name === 'usage.breakdown') return V[JSON.stringify([input.range, input.path || []])] || V[JSON.stringify([input.range, []])]
   if (name.startsWith('prices.')) throw new Error('Not available in the preview')
@@ -61,7 +66,7 @@ const shim = `<script>window.__USAGE_PREVIEW__ = (() => { const R = ${JSON.strin
 const html = readFileSync(new URL('../panel/index.html', import.meta.url), 'utf8')
   .replace('<html lang="en">', `<html lang="en" class="${light ? 'light' : 'dark'}">`)
   .replace('<script>', `${shim}<script>`)
-const click = cost ? `<script>setTimeout(() => document.querySelector('[data-metric=cost]')?.click(), 300)</script>` : showBreakdown ? `<script>setTimeout(() => document.querySelector('[data-view=breakdown]')?.click(), 300)</script>` : ''
+const click = cost ? `<script>setTimeout(() => document.querySelector('[data-metric=cost]')?.click(), 300)</script>` : showLog ? `<script>setTimeout(() => document.querySelector('[data-view=log]')?.click(), 300)</script>` : showBreakdown ? `<script>setTimeout(() => document.querySelector('[data-view=breakdown]')?.click(), 300)</script>` : ''
 writeFileSync(out, html.replace('</body>', `${click}</body>`))
 console.log(`Wrote ${out}`)
 process.exit(0)

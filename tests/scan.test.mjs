@@ -452,7 +452,7 @@ test('cache is written atomically, at most once per 30 s, and its timer is unref
   assert.equal(to, fx.cacheFile);
   assert.notEqual(from, to);
   assert.match(from, /\.tmp$/);
-  assert.equal(JSON.parse(await fsp.readFile(fx.cacheFile, 'utf8')).version, 6);
+  assert.equal(JSON.parse(await fsp.readFile(fx.cacheFile, 'utf8')).version, 7);
 
   await fsp.appendFile(file, lines(claudeLine({ id: 'm2' })));
   clock += 10_000;
@@ -1282,7 +1282,7 @@ for (const version of [4, 5]) {
     assert.deepEqual(rec.log.opened, [codexFile], 'only the Codex file is read');
     assert.deepEqual(warm.records.toRecords(), fresh);
     await migrated.flush();
-    assert.equal(JSON.parse(await fsp.readFile(fx.cacheFile, 'utf8')).version, 6);
+    assert.equal(JSON.parse(await fsp.readFile(fx.cacheFile, 'utf8')).version, 7);
     assert.equal(await fsp.readFile(legacyFile, 'utf8'), legacyBody);
 
     const rec2 = recordingFs();

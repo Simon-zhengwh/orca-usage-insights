@@ -117,6 +117,84 @@ test('panel requests a report and renders every section', async () => {
   assert.equal(JSON.stringify(calls.at(-1)), JSON.stringify(['usage.report', { range: '7d', includeCache: true }]))
 })
 
+
+test('the log view asks for a page of requests and renders a table, hours and throughput', async () => {
+  const { calls, get, click, settle } = await mountPanel()
+  click('view', { view: 'log' })
+  await settle()
+  assert.deepEqual(calls.at(-1), { name: 'usage.log', input: { range: '7d', includeCache: true, offset: 0, limit: 100 } })
+  assert.equal(get('content').hidden, true, 'the usage cards are hidden while the log is open')
+  assert.equal(get('log').hidden, false)
+  assert.equal(get('bd').hidden, true)
+  assert.match(get('log-hour').innerHTML, /<svg/)
+  assert.match(get('log-hour-legend').innerHTML, /缓存读取/)
+  assert.match(get('log-speed').innerHTML, /<circle/)
+  assert.match(get('log-table').innerHTML, /deepseek-v4\.1-flash/)
+  assert.match(get('log-table').innerHTML, /claude-opus-5-5/)
+  assert.match(get('log-table').innerHTML, /20:05:00|20:05/, 'rows show a local clock time')
+  assert.match(get('log-count').textContent, /12/)
+  assert.match(get('log-sub').textContent, /12 \/ 12 笔/)
+  assert.match(get('log-hour-title').textContent, /每小时用量与吞吐/)
+  assert.match(get('log-hour-sub').textContent, /整点归并/)
+})
+
+test('a log page without measured durations says so instead of drawing a throughput', async () => {
+  const { get, click, settle } = await mountPanel(undefined, undefined, (input) => {
+    const page = sampleLog(input)
+    page.hourly = page.hourly.map((h) => ({ ...h, tokPerSec: null, timed: 0 }))
+    page.totals.tokPerSec = null
+    page.rows = page.rows.map(({ durationMs, tokPerSec, ...row }) => row)
+    return page
+  })
+  click('view', { view: 'log' })
+  await settle()
+  assert.match(get('log-speed').innerHTML, /没有可用的吞吐数据/)
+  assert.match(get('log-speed').innerHTML, /Pi/)
+  assert.doesNotMatch(get('log-speed').innerHTML, /<svg/)
+  assert.match(get('log-table').innerHTML, /—/, 'a request without a duration shows a dash, not a zero')
+})
+
+test('more rows are appended with the next offset and the button says how many are left', async () => {
+  const { calls, get, click, settle } = await mountPanel(undefined, undefined, (input) => {
+    const page = sampleLog(input)
+    page.total = 30
+    return page
+  })
+  click('view', { view: 'log' })
+  await settle()
+  assert.equal(get('log-more').hidden, false)
+  assert.match(get('log-more').textContent, /还有 18 笔/)
+  get('log-more').listeners.click()
+  await settle()
+  assert.deepEqual(calls.at(-1).input, { range: '7d', includeCache: true, offset: 12, limit: 100 })
+  assert.equal(get('log-more').hidden, false)
+})
+
+test('one local day turns the hour chart into that day and narrows the requests', async () => {
+  const { calls, get, click, settle } = await mountPanel()
+  click('ranges', { range: 'custom' })
+  get('start-date').value = get('end-date').value = '2026-11-03'
+  get('date-apply').listeners.click()
+  await settle()
+  click('view', { view: 'log' })
+  await settle()
+  assert.deepEqual(calls.at(-1).input, { range: 'custom', includeCache: true, startDate: '2026-11-03', endDate: '2026-11-03', offset: 0, limit: 100 })
+  assert.match(get('log-hour-title').textContent, /2026-11-03 每小时用量与吞吐/)
+  assert.match(get('log-hour-sub').textContent, /这一天/)
+})
+
+test('switching back to usage does not refetch the report', async () => {
+  const { calls, get, click, settle } = await mountPanel()
+  click('view', { view: 'log' })
+  await settle()
+  const before = calls.length
+  click('view', { view: 'usage' })
+  await settle()
+  assert.equal(calls.length, before, 'the report is already loaded and reused')
+  assert.equal(get('content').hidden, false)
+  assert.equal(get('log').hidden, true)
+})
+
 test('panel shows an error state when the worker fails', async () => {
   const html = readFileSync(new URL('../panel/index.html', import.meta.url), 'utf8')
   const script = html.match(/<script>([\s\S]*?)<\/script>/)[1]
@@ -128,14 +206,31 @@ test('panel shows an error state when the worker fails', async () => {
   assert.equal(els.get('status').hidden, false)
 })
 
-async function mountPanel(makeReport = (input) => sampleReport(input.range, input.includeCache), settings) {
+// A worker answer for usage.log: twelve of the day's requests, two of them with a measured duration.
+function sampleLog({ offset = 0, limit = 100 } = {}) {
+  const rows = Array.from({ length: 12 }, (_, i) => {
+    const ts = new Date(2026, 10, 3, 20 - i, 5).toISOString()
+    const base = { ts, ms: Date.parse(ts), provider: i % 3 ? 'pi' : 'claude', model: i % 3 ? 'deepseek-v4.1-flash' : 'claude-opus-5-5', project: i % 2 ? 'pyrosome' : 'webhooks', sessionId: `s${i}`, cwd: '/w/pyrosome', host: 'local', input: 1000 + i * 10, output: 500 + i, cacheRead: 2000, cacheWrite: 40, usd: 0.5 }
+    if (i < 2) Object.assign(base, { durationMs: 1000, tokPerSec: i ? 20 : 80 })
+    return base
+  })
+  const hourly = Array.from({ length: 24 }, (_, hour) => ({ hour, requests: hour === 20 ? 2 : 0, input: hour === 20 ? 2000 : 0, output: hour === 20 ? 1000 : 0, cacheRead: 0, cacheWrite: 0, tokens: hour === 20 ? 3000 : 0, uncached: hour === 20 ? 3000 : 0, costUsd: hour === 20 ? 1 : 0, output_: 0, durationMs: hour === 20 ? 2000 : 0, timed: hour === 20 ? 2 : 0, tokPerSec: hour === 20 ? 50 : null }))
+  return {
+    day: null, offset, limit, total: 12,
+    rows: rows.slice(offset, offset + limit),
+    hourly,
+    totals: { requests: 12, tokens: 36000, uncached: 12000, output: 6000, usd: 6, timed: 2, tokPerSec: 50 },
+  }
+}
+
+async function mountPanel(makeReport = (input) => sampleReport(input.range, input.includeCache), settings, makeLog = (input) => sampleLog(input)) {
   const html = readFileSync(new URL('../panel/index.html', import.meta.url), 'utf8')
   const script = html.match(/<script>([\s\S]*?)<\/script>/)[1]
   const { els, document } = fakeDom()
   const calls = []
   const pluginEvents = {}
   // Price requests (the footer line) are not part of what these tests check.
-  const orca = { plugin: { request: async (name, input) => { if (name.startsWith('prices.')) return null; calls.push(JSON.parse(JSON.stringify({ name, input }))); return makeReport(input) }, on(name, handler) { pluginEvents[name] = handler } }, on() {}, settings }
+  const orca = { plugin: { request: async (name, input) => { if (name.startsWith('prices.')) return null; calls.push(JSON.parse(JSON.stringify({ name, input }))); return name === 'usage.log' ? makeLog(input) : makeReport(input) }, on(name, handler) { pluginEvents[name] = handler } }, on() {}, settings }
   const viewport = { innerWidth: 320, innerHeight: 600 }
   const events = {}
   vm.runInContext(script, vm.createContext({ document, orca, window: viewport, addEventListener: (name, handler) => { events[name] = handler }, console, Date, Intl, JSON, Math, setTimeout, clearTimeout }))
