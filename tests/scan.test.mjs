@@ -855,6 +855,35 @@ test('parse threads give the same records and tail state as parsing inline', asy
   assert.equal(c.records.length, 2503);
 });
 
+const piLines = (cwd, id, usage) =>
+  lines(
+    JSON.stringify({ type: 'session', version: 3, id, timestamp: T, cwd }),
+    JSON.stringify({ type: 'model_change', id: 'mc', timestamp: T, provider: 'gateway', modelId: 'deepseek-v4.1-flash' }),
+    JSON.stringify({ type: 'message', id: 'a1', timestamp: T, message: { role: 'assistant', content: [{ type: 'text', text: 'ok' }], model: 'deepseek-v4.1-flash', usage, responseId: `resp-${id}` } }),
+  );
+
+test('a Pi session folder is read from the default root and an extra folder, and its tokens are counted', async (t) => {
+  const fx = await fixture(t);
+  const piDir = path.join(fx.base, 'pi-agent');
+  const session = path.join(piDir, 'sessions', '--home-me-work-theta--');
+  await fsp.mkdir(session, { recursive: true });
+  await fsp.writeFile(path.join(session, '2026-10-01T09-00-00-000Z_pi-sess-a.jsonl'), piLines('/home/me/work/theta', 'pi-sess-a', { input: 100, output: 40, cacheRead: 1000, cacheWrite: 50, totalTokens: 1140 }));
+  const scanner = createScanner({ env: { ...fx.env, PI_CODING_AGENT_DIR: piDir }, home: fx.base, threads: 0 });
+  const result = await scanner.scan();
+  const pi = result.records.toRecords().filter((r) => r.provider === 'pi');
+  assert.equal(pi.length, 1);
+  assert.deepEqual([pi[0].project, pi[0].sessionId, pi[0].model, pi[0].input, pi[0].output, pi[0].cacheRead, pi[0].cacheWrite], ['theta', 'pi-sess-a', 'deepseek-v4.1-flash', 100, 40, 1000, 50]);
+  assert.deepEqual(pi[0].key, 'pi:resp-pi-sess-a');
+
+  const backup = path.join(fx.base, 'pi-copy');
+  await fsp.mkdir(path.join(backup, 'sessions', 'proj'), { recursive: true });
+  await fsp.writeFile(path.join(backup, 'sessions', 'proj', 'b.jsonl'), piLines('/w/beta', 'pi-sess-b', { input: 7, output: 3, cacheRead: 0, cacheWrite: 0, totalTokens: 10 }));
+  scanner.setExtraRoots({ claude: [], codex: [], pi: [backup] });
+  const next = await scanner.scan();
+  assert.deepEqual(next.records.toRecords().filter((r) => r.provider === 'pi').map((r) => r.project).sort(), ['beta', 'theta']);
+  assert.deepEqual(extraFolders(next).filter((f) => f.kind === 'pi'), [{ path: backup, kind: 'pi', state: 'ok', files: 1, records: 1 }]);
+});
+
 test('an extra Claude folder that holds projects is read through projects only, like a default root', async (t) => {
   const fx = await fixture(t);
   const backup = path.join(fx.base, 'backup-claude');
@@ -909,7 +938,7 @@ test('a missing extra folder is a warning with no error and no records', async (
   const result = await scanner.scan();
   assert.equal(result.errors, 0);
   assert.equal(result.records.length, 1, 'only the default root contributes');
-  assert.deepEqual(extraFolders(result), [{ path: missing, kind: 'claude', state: 'warning', files: 0, records: 0, message: 'Folder not found' }]);
+  assert.deepEqual(extraFolders(result), [{ path: missing, kind: 'claude', state: 'warning', files: 0, records: 0, message: '文件夹不存在' }]);
 });
 
 test('an extra folder path that names a file is a warning, not a read error', async (t) => {
@@ -920,7 +949,7 @@ test('an extra folder path that names a file is a warning, not a read error', as
   scanner.setExtraRoots({ claude: [file], codex: [] });
   const result = await scanner.scan();
   assert.equal(result.errors, 0);
-  assert.deepEqual(extraFolders(result), [{ path: file, kind: 'claude', state: 'warning', files: 0, records: 0, message: 'Not a folder' }]);
+  assert.deepEqual(extraFolders(result), [{ path: file, kind: 'claude', state: 'warning', files: 0, records: 0, message: '不是文件夹' }]);
 });
 
 test('an extra folder that is a default root is counted once, through its symlink too', async (t) => {
@@ -1140,7 +1169,7 @@ test('temporary extra-root stat denial preserves warm records but ENOENT does no
   const failed = await scanner.scan({ force: true });
   assert.equal(failed.records.length, 1);
   assert.equal(failed.errors, 1);
-  assert.deepEqual(extraFolders(failed), [{ path: backup, kind: 'claude', state: 'warning', files: 0, records: 1, message: 'Cannot open folder (EACCES)' }]);
+  assert.deepEqual(extraFolders(failed), [{ path: backup, kind: 'claude', state: 'warning', files: 0, records: 1, message: '无法打开文件夹（EACCES）' }]);
   failure = null;
   assert.equal((await scanner.scan({ force: true })).records.length, 1);
   failure = 'ENOENT';

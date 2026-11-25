@@ -1,4 +1,6 @@
 // One token digest per transcript for Breakdown, a shard per file under digests-v1/. Runs only when Breakdown asks.
+// Only providers with an events adapter (claude, codex) are digested; Pi usage is counted and reported as
+// not analysed, like OpenCode.
 // A shard is <sha1 of path>.json: { v: 3, path, key, offset, compressed, kind, sessionId, ctx, digest }, rows
 // packed (digest-rows.mjs). A plain file's adapter and fold state is in <sha1>.state.json { v: 3, path, key,
 // state }, used only when its key matches the shard's. v2 shards (one file, rows as arrays) convert on first use.
@@ -16,6 +18,9 @@ import { listTranscripts, readTranscript } from './transcript-files.mjs';
 // was priced in, so they are read again from the transcript rather than converted.
 const SHARD_VERSION = 4;
 const CONCURRENCY = 8;
+// Providers a digest adapter exists for (src/node/digest-consumer.mjs). Roots and extra folders of any
+// other kind are left to the records scanner.
+const DIGEST_KINDS = new Set(['claude', 'codex']);
 
 // cacheDir: the digests folder, or null to keep everything in memory (tests, previews).
 // Consumers adopt their state: each is dropped once read, and no other code reads a state it starts from.
@@ -45,8 +50,8 @@ export function createDigestScanner({
   // since: epoch ms. Files last changed before it are not read (state 'old'). A call joins the running
   // scan when it covers the range and the same extra folders, else runs after it.
   // sessions: ids whose files are read even when last changed before `since` (they have turns after it).
-  function scan({ extra = { claude: [], codex: [] }, since = 0, sessions = null } = {}) {
-    const folders = JSON.stringify([extra?.claude ?? [], extra?.codex ?? [], extra?.disabled ?? []]);
+  function scan({ extra = { claude: [], codex: [], pi: [] }, since = 0, sessions = null } = {}) {
+    const folders = JSON.stringify([extra?.claude ?? [], extra?.codex ?? [], extra?.pi ?? [], extra?.disabled ?? []]);
     if (run && run.since <= since && run.folders === folders) return run.done;
     const before = run?.done.catch(() => {}) ?? null;
     const current = { since, folders, done: null };
@@ -65,9 +70,10 @@ export function createDigestScanner({
 
   async function runScan(extra, since, sessions) {
     if (threads > 0 && !pool && fs === fsp) pool = createParsePool(threads);
-    const roots = await rootSpecs({ platform, env, home, readdir: fs.readdir });
+    const roots = (await rootSpecs({ platform, env, home, readdir: fs.readdir })).filter((root) => DIGEST_KINDS.has(root.kind));
     const listing = { errors: 0, failed: [], disabled: [] };
-    const { found } = await listTranscripts({ fs, platform, roots, extra, run: listing });
+    const digestExtra = Object.fromEntries(Object.entries(extra ?? {}).filter(([kind]) => kind === 'disabled' || DIGEST_KINDS.has(kind)));
+    const { found } = await listTranscripts({ fs, platform, roots, extra: digestExtra, run: listing });
     progress = { done: 0, total: found.length };
     const statuses = new Map();
     let next = 0;

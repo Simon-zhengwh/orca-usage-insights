@@ -38,7 +38,7 @@ test('builders escape every label from the worker', () => {
 test('the headline shows the Usage total with + when models are unpriced', () => {
   const html = headline(view)
   assert.match(html, /\$12\.50\+/)
-  assert.match(html, /not analysed/)
+  assert.match(html, /未分析/)
 })
 
 test('crumbs mark the current level and rows drill only where there are children', () => {
@@ -46,38 +46,38 @@ test('crumbs mark the current level and rows drill only where there are children
   assert.match(t.crumbs, /data-depth="2" aria-current="page"/)
   assert.match(t.rows, /<button class="node" data-key="lib"/)
   assert.ok(!/<button class="node" data-key="a/.test(t.rows))
-  assert.match(t.rows, /\+ 3 more/)
+  assert.match(t.rows, /还有 3 项/)
 })
 
 test('finding cards carry an Explain button with the finding id and no total', () => {
   const html = findings(view)
   assert.match(html, /data-explain="large-results:abc"/)
-  assert.match(html, /Cost of this pattern/)
-  assert.match(findings({ ...view, findings: [] }), /No pattern above \$1/)
+  assert.match(html, /这个模式的成本/)
+  assert.match(findings({ ...view, findings: [] }), /没有超过 \$1 的模式/)
 })
 
 test('not analysed lists reasons with next steps and the unpriced models', () => {
   const html = notAnalysed(view)
-  assert.match(html, /On SSH hosts/)
+  assert.match(html, /SSH 主机上的用量/)
   assert.match(html, /price-overrides\.json/)
   assert.equal(notAnalysed({ ...view, totals: { ...view.totals, notAnalysed: [] } }), '')
 })
 
 test('legend explains the marks and the dedupe', () => {
   assert.match(legend(view), /25\.0%/)
-  assert.match(legend(view), /resumed sessions/)
+  assert.match(legend(view), /续接会话/)
 })
 
 test('price line shows the source, overrides and only the actions that apply', () => {
   const bundled = priceLine({ version: 'v', asOf: '2026-11-11', overlay: null, canUndo: false, overrides: null })
-  assert.match(bundled, /bundled 2026-11-11/)
+  assert.match(bundled, /内置 2026-11-11/)
   assert.ok(!bundled.includes('data-price="undo"'))
   assert.ok(!bundled.includes('data-price="reset"'))
   const synced = priceLine({ version: 'v', asOf: '2026-11-11', overlay: { appliedAt: '2026-11-12T10:00:00Z', sources: ['litellm'] }, canUndo: true, overrides: { file: '/c/price-overrides.json', models: 2, aliases: 1, problems: ['overrides: bad rate'] } })
-  assert.match(synced, /synced 2026-11-12/)
-  assert.match(synced, /your overrides \(2 models, 1 alias\)/)
+  assert.match(synced, /已同步 2026-11-12/)
+  assert.match(synced, /你的覆盖（2 个模型，1 个别名）/)
   assert.match(synced, /data-price="undo"/)
-  assert.match(synced, /Overrides file: overrides: bad rate/)
+  assert.match(synced, /覆盖文件：overrides: bad rate/)
 })
 
 test('sync rows keep ticks, and overridden rows cannot be ticked', () => {
@@ -90,10 +90,10 @@ test('sync rows keep ticks, and overridden rows cannot be ticked', () => {
     ],
     impact: { beforeUsd: 10, afterUsd: 9 },
   })
-  assert.match(html, /\$10\.00<\/strong> now → <strong>\$9\.00/)
+  assert.match(html, /\$10\.00<\/strong> → 按预勾选的更改后 <strong>\$9\.00/)
   assert.match(html, /data-key="claude-opus-5-5\.output" checked/)
   assert.match(html, /data-key="claude-opus-5-5\.input" disabled/)
-  assert.match(html, /models\.dev: timeout/)
+  assert.match(html, /models\.dev：timeout/)
 })
 
 test('Sync leaves out prices that already match and counts them', async () => {
@@ -111,5 +111,5 @@ test('Sync leaves out prices that already match and counts them', async () => {
   assert.match(html, /data-key="m\.output"/)
   assert.match(html, /data-key="n\.input"/)
   assert.match(html, /\$18<span class="muted small">models\.dev \$19/)
-  assert.match(html, /1 more price matches what you use now/)
+  assert.match(html, /另有 1 条价格与你当前的设置一致/)
 })

@@ -1,10 +1,10 @@
 {
   "manifestVersion": 2,
   "id": "usage-insights",
-  "name": "Usage Insights",
-  "version": "1.2.1",
+  "name": "用量洞察",
+  "version": "1.3.0",
   "execution": "trusted-worker",
-  "description": "Charts of your Claude Code, Codex and OpenCode token use and estimated API cost by day, project, model and machine, plus a Breakdown of what the spend went on, down to the file or command, with prompts your agent can use to explain the costly patterns. Reads local transcripts and any SSH hosts you add.",
+  "description": "用图表展示你的 Claude Code、Codex、Pi 与 OpenCode 用量与预估 API 成本，可按天、项目、模型和机器查看；还有一个“拆解”视图，把花费拆到文件或命令，并生成可交给 agent 的提示词去分析那些昂贵的模式。数据来自本机转录，以及你添加的 SSH 主机。",
   "author": {
     "name": "Etherll",
     "url": "https://github.com/Etherll"
@@ -21,7 +21,7 @@
     "panels": [
       {
         "id": "insights",
-        "title": "Usage Insights",
+        "title": "用量洞察",
         "icon": "bar-chart-3",
         "entry": "panel/index.html"
       }
@@ -29,7 +29,7 @@
     "commands": [
       {
         "id": "toggleSidebar",
-        "title": "Usage Insights: Show or hide the right sidebar",
+        "title": "用量洞察：显示或隐藏右侧边栏",
         "action": "sidebar.right.toggle"
       }
     ],
@@ -38,7 +38,7 @@
         "id": "today",
         "text": "—",
         "icon": "bar-chart-3",
-        "tooltip": "Usage Insights",
+        "tooltip": "用量洞察",
         "command": "toggleSidebar"
       }
     ],
@@ -50,8 +50,8 @@
     "settings": [
       {
         "key": "extraClaudeFolders",
-        "title": "Extra Claude Code folders",
-        "description": "One folder per line, read along with ~/.claude. Use a folder that holds a projects directory, or a folder of Claude Code .jsonl transcripts.",
+        "title": "额外的 Claude Code 文件夹",
+        "description": "每行一个文件夹，会跟 ~/.claude 一起读取。可以填包含 projects 目录的文件夹，也可以直接填放 Claude Code .jsonl 转录的文件夹。",
         "type": "string",
         "multiline": true,
         "default": "",
@@ -59,8 +59,8 @@
       },
       {
         "key": "extraCodexFolders",
-        "title": "Extra Codex folders",
-        "description": "One folder per line, read along with ~/.codex. Use a folder that holds a sessions directory, or a folder of Codex .jsonl transcripts.",
+        "title": "额外的 Codex 文件夹",
+        "description": "每行一个文件夹，会跟 ~/.codex 一起读取。可以填包含 sessions 目录的文件夹，也可以直接填放 Codex .jsonl 转录的文件夹。",
         "type": "string",
         "multiline": true,
         "default": "",
@@ -68,8 +68,8 @@
       },
       {
         "key": "sshHosts",
-        "title": "SSH hosts",
-        "description": "One host per line: a name from ~/.ssh/config, or user@host. Key or ssh-agent login only; passwords are not supported. The remote must be Linux or macOS.",
+        "title": "SSH 主机",
+        "description": "每行一个主机：~/.ssh/config 里的名称，或 user@host。只支持密钥或 ssh-agent 登录，不支持密码。远端需为 Linux 或 macOS。",
         "type": "string",
         "multiline": true,
         "default": "",
@@ -77,8 +77,8 @@
       },
       {
         "key": "disabledFolders",
-        "title": "Turned-off transcript folders",
-        "description": "One folder per line. Usage from these folders is left out until you take them off this list. Click a folder in the panel's source list to turn it off or on.",
+        "title": "已关闭的转录文件夹",
+        "description": "每行一个文件夹。在你从这份名单里移除之前，这些文件夹的用量都不计入。在面板的数据源列表里点文件夹即可打开或关闭。",
         "type": "string",
         "multiline": true,
         "default": "",
@@ -86,8 +86,8 @@
       },
       {
         "key": "defaultRange",
-        "title": "Default range",
-        "description": "The range the panel opens on, and goes back to when you clear a custom range.",
+        "title": "默认范围",
+        "description": "面板打开时使用的范围；清除自定义范围后也会回到它。",
         "type": "string",
         "default": "7d",
         "enum": [
@@ -98,11 +98,11 @@
           "all"
         ],
         "enumLabels": [
-          "Today",
-          "7d",
-          "30d",
-          "90d",
-          "All"
+          "今天",
+          "7 天",
+          "30 天",
+          "90 天",
+          "全部"
         ]
       }
     ]
@@ -120,33 +120,33 @@
   ],
   "cover": {
     "path": "images/cover.png",
-    "alt": "Usage Insights in an Orca window: 30-day token totals, a split by provider and machine, and a daily trend"
+    "alt": "Orca 窗口中的用量洞察面板：30 天 Token 总量、按提供方与机器的拆分，以及每日趋势"
   },
   "screenshots": [
     {
       "path": "images/screenshot-overview.png",
-      "alt": "Overview with stat tiles, provider and machine split, totals and a smoothed daily trend per provider",
-      "caption": "The last 30 days, split by provider and by machine"
+      "alt": "概览：统计卡片、提供方与机器拆分、总量，以及按提供方平滑后的每日趋势",
+      "caption": "最近 30 天，按提供方和机器拆分"
     },
     {
       "path": "images/screenshot-cost.png",
-      "alt": "Daily cost bars, a 26-week activity calendar, a weekday by hour rhythm chart and a model breakdown table",
-      "caption": "Cost per day, 26 weeks of activity, and the most expensive models"
+      "alt": "每日成本柱状图、26 周活跃日历、星期×小时节律图和模型排行表",
+      "caption": "每日成本、26 周活跃度，以及最贵的模型"
     },
     {
       "path": "images/screenshot-filters.png",
-      "alt": "Filters menu open with session scope, provider and machine options and a Worktrees only chip",
-      "caption": "Filter to Orca worktrees, one provider or one machine"
+      "alt": "筛选菜单已打开，显示会话范围、提供方与机器选项，以及“仅 worktree”筛选标签",
+      "caption": "筛到 Orca worktree、单个提供方或单台机器"
     },
     {
       "path": "images/screenshot-activity.png",
-      "alt": "Light theme activity calendar, rhythm chart, breakdown, token mix donut and projects",
-      "caption": "Uses your Orca theme colors"
+      "alt": "浅色主题下的活跃日历、节律图、拆解、Token 构成环形图和项目列表",
+      "caption": "跟随你的 Orca 主题配色"
     },
     {
       "path": "images/screenshot-sidebar.png",
-      "alt": "The panel at sidebar width in dark and light themes",
-      "caption": "At sidebar width"
+      "alt": "侧边栏宽度下面板在深色与浅色主题下的样子",
+      "caption": "侧边栏宽度下的效果"
     }
   ]
 }

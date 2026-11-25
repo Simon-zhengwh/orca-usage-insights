@@ -7,11 +7,11 @@ import { PROVIDER_LABELS } from '../core/provider-names.mjs'
 export { compact, PROVIDER_LABELS }
 
 export const TOKEN_KEYS = ['input', 'output', 'cacheRead', 'cacheWrite']
-export const TOKEN_LABELS = { input: 'Input', output: 'Output', cacheRead: 'Cache read', cacheWrite: 'Cache write' }
+export const TOKEN_LABELS = { input: '输入', output: '输出', cacheRead: '缓存读取', cacheWrite: '缓存写入' }
 export const TOKEN_COLORS = { input: 'var(--s1)', output: 'var(--s2)', cacheRead: 'var(--s3)', cacheWrite: 'var(--s4)' }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const MONTHS = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
 
 export function esc(value) {
   return String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
@@ -30,13 +30,13 @@ export function dayTicks(n, slotPx, minPx = 46) {
 function dayLabel(day, x, y, anchor, withWeekday) {
   const date = new Date(day + 'T00:00:00')
   let out = `<text x="${x}" y="${y}" class="t-muted" text-anchor="${anchor}">${esc(shortDay(day))}</text>`
-  if (withWeekday) out += `<text x="${x}" y="${y + 12}" class="t-faint" text-anchor="${anchor}">${WEEKDAYS[date.getDay()]}</text>`
+  if (withWeekday) out += `<text x="${x}" y="${y + 12}" class="t-faint" text-anchor="${anchor}">周${WEEKDAYS[date.getDay()]}</text>`
   return out
 }
 
 function shortDay(day) {
   const [, m, d] = day.split('-')
-  return `${MONTHS[Number(m) - 1]} ${Number(d)}`
+  return `${Number(m)}月${Number(d)}日`
 }
 
 function svg(w, h, body, label) {
@@ -44,13 +44,13 @@ function svg(w, h, body, label) {
 }
 
 function empty(w, h, label) {
-  return svg(w, h, `<text x="${w / 2}" y="${h / 2}" class="t-muted" text-anchor="middle" dominant-baseline="middle">No usage yet</text>`, label)
+  return svg(w, h, `<text x="${w / 2}" y="${h / 2}" class="t-muted" text-anchor="middle" dominant-baseline="middle">暂无用量</text>`, label)
 }
 
 // Daily stacked bars. Segments stack bottom-up in `keys` order with a 2px surface gap,
 // the bar's top is rounded via a clip path, and every bar carries a tooltip payload.
 export function stackedBars(daily, { keys = TOKEN_KEYS, width = 360, height = 170, id = 'sb', colors = TOKEN_COLORS, labels = TOKEN_LABELS, fmt = null } = {}) {
-  const label = 'Daily usage'
+  const label = '每日用量'
   if (!daily?.length) return empty(width, height, label)
   const withWeekday = daily.length <= 14
   const top = 18
@@ -118,7 +118,7 @@ export function levels(values) {
 
 // GitHub-style calendar: columns are weeks (Sun..Sat rows), oldest left.
 export function calendarHeatmap(calendar, { cell = 11, gap = 2 } = {}) {
-  const label = 'Daily activity calendar'
+  const label = '每日活跃日历'
   if (!calendar?.length) return empty(300, 100, label)
   const first = new Date(calendar[0].day + 'T00:00:00')
   const offset = first.getDay()
@@ -144,16 +144,16 @@ export function calendarHeatmap(calendar, { cell = 11, gap = 2 } = {}) {
         lastMonth = month
       }
     }
-    const tip = esc(JSON.stringify({ title: shortDay(d.day), rows: [['Tokens', d.total]] }))
+    const tip = esc(JSON.stringify({ title: shortDay(d.day), rows: [['Token', d.total]] }))
     body += `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2" class="mark cell q${lv[i]}" data-tip="${tip}"/>`
   })
-  for (const r of [1, 3, 5]) body += `<text x="0" y="${top + r * step + cell - 2}" class="t-muted">${WEEKDAYS[r]}</text>`
+  for (const r of [1, 3, 5]) body += `<text x="0" y="${top + r * step + cell - 2}" class="t-muted">周${WEEKDAYS[r]}</text>`
   return svg(w, h, body, label)
 }
 
 // Weekday x hour punch card; dot area follows the value.
 export function punchCard(grid, { cell = 13 } = {}) {
-  const label = 'Activity by weekday and hour'
+  const label = '按星期与小时的活跃度'
   const values = Array.from({ length: 168 }, (_, i) => Number(grid?.[i]) || 0)
   const max = Math.max(...values)
   const left = 28
@@ -162,24 +162,24 @@ export function punchCard(grid, { cell = 13 } = {}) {
   if (max <= 0) return empty(w, h, label)
   let body = ''
   for (let d = 0; d < 7; d++) {
-    body += `<text x="0" y="${d * cell + cell / 2 + 4}" class="t-muted">${WEEKDAYS[d]}</text>`
+    body += `<text x="0" y="${d * cell + cell / 2 + 4}" class="t-muted">周${WEEKDAYS[d]}</text>`
     for (let hr = 0; hr < 24; hr++) {
       const v = values[d * 24 + hr]
       const cx = left + hr * cell + cell / 2
       const cy = d * cell + cell / 2
       const r = v > 0 ? Math.max(1.5, Math.sqrt(v / max) * (cell / 2 - 1)) : 1
-      const tip = esc(JSON.stringify({ title: `${WEEKDAYS[d]} ${String(hr).padStart(2, '0')}:00`, rows: [['Tokens', v]] }))
+      const tip = esc(JSON.stringify({ title: `周${WEEKDAYS[d]} ${String(hr).padStart(2, '0')}:00`, rows: [['Token', v]] }))
       body += `<g class="mark" data-tip="${tip}"><rect x="${cx - cell / 2}" y="${cy - cell / 2}" width="${cell}" height="${cell}" class="hit"/>`
       body += `<circle cx="${cx}" cy="${cy}" r="${r}" class="${v > 0 ? 'dot' : 'dot-empty'}"/></g>`
     }
   }
-  for (const hr of [0, 6, 12, 18]) body += `<text x="${left + hr * cell + 2}" y="${h - 2}" class="t-muted">${hr}h</text>`
+  for (const hr of [0, 6, 12, 18]) body += `<text x="${left + hr * cell + 2}" y="${h - 2}" class="t-muted">${hr}时</text>`
   return svg(w, h, body, label)
 }
 
 // Ring chart with 2px gaps between segments. segments: [{ label, value, color }]
-export function donut(segments, { size = 132, thickness = 16, centerLabel = 'tokens' } = {}) {
-  const label = 'Token mix'
+export function donut(segments, { size = 132, thickness = 16, centerLabel = 'Token' } = {}) {
+  const label = 'Token 构成'
   const total = (segments || []).reduce((s, x) => s + (x.value > 0 ? x.value : 0), 0)
   const r = (size - thickness) / 2
   const c = size / 2
@@ -191,7 +191,7 @@ export function donut(segments, { size = 132, thickness = 16, centerLabel = 'tok
     let acc = 0
     for (const s of live) {
       const len = (s.value / total) * circ
-      const tip = esc(JSON.stringify({ title: s.label, rows: [['Tokens', s.value], ['Share', `${((s.value / total) * 100).toFixed(1)}%`]] }))
+      const tip = esc(JSON.stringify({ title: s.label, rows: [['Token', s.value], ['占比', `${((s.value / total) * 100).toFixed(1)}%`]] }))
       body += `<circle class="mark" data-tip="${tip}" cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${s.color}" stroke-width="${thickness}" stroke-dasharray="${Math.max(0.5, len - gap)} ${circ}" stroke-dashoffset="${-acc}" transform="rotate(-90 ${c} ${c})"/>`
       acc += len
     }
@@ -203,7 +203,7 @@ export function donut(segments, { size = 132, thickness = 16, centerLabel = 'tok
 
 // Horizontal bar list. items: [{ label, value, note? }]
 export function hBars(items, { width = 360, row = 24, labelW = Math.min(180, Math.max(110, width * 0.3)), valueW = 64 } = {}) {
-  const label = 'Ranking'
+  const label = '排行'
   if (!items?.length) return empty(width, row * 2, label)
   const max = Math.max(...items.map((i) => i.value), 0)
   const barMax = width - labelW - valueW
@@ -213,7 +213,7 @@ export function hBars(items, { width = 360, row = 24, labelW = Math.min(180, Mat
     const w = max > 0 ? Math.max(it.value > 0 ? 3 : 0, (it.value / max) * barMax) : 0
     const maxChars = Math.floor(labelW / 6.6)
     const name = it.label.length > maxChars ? it.label.slice(0, maxChars - 1) + '…' : it.label
-    const tip = esc(JSON.stringify({ title: it.label, rows: [['Tokens', it.value], ...(it.note ? [['', it.note]] : [])] }))
+    const tip = esc(JSON.stringify({ title: it.label, rows: [['Token', it.value], ...(it.note ? [['', it.note]] : [])] }))
     body += `<g class="mark" data-tip="${tip}"><rect x="0" y="${y}" width="${width}" height="${row}" class="hit"/>`
     body += `<text x="0" y="${y + row / 2 + 4}" class="t-label">${esc(name)}</text>`
     body += `<rect x="${labelW}" y="${y + 6}" width="${w}" height="${row - 12}" rx="3" class="bar"/>`
@@ -224,15 +224,15 @@ export function hBars(items, { width = 360, row = 24, labelW = Math.min(180, Mat
 
 export function sparkline(values, { width = 96, height = 26 } = {}) {
   const v = (values || []).map((x) => Number(x) || 0)
-  if (v.length < 2) return svg(width, height, '', 'Trend')
+  if (v.length < 2) return svg(width, height, '', '趋势')
   const max = Math.max(...v) || 1
   const pts = v.map((x, i) => [(i / (v.length - 1)) * (width - 4) + 2, height - 3 - (x / max) * (height - 6)])
   const d = pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')
   const [lx, ly] = pts[pts.length - 1]
-  return svg(width, height, `<polyline points="${d}" fill="none" class="spark" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${lx}" cy="${ly}" r="2.5" class="spark-dot"/>`, 'Trend')
+  return svg(width, height, `<polyline points="${d}" fill="none" class="spark" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${lx}" cy="${ly}" r="2.5" class="spark-dot"/>`, '趋势')
 }
 
-export const PROVIDER_COLORS = { claude: 'var(--s2)', codex: 'var(--s1)', opencode: 'var(--s3)' }
+export const PROVIDER_COLORS = { claude: 'var(--s2)', codex: 'var(--s1)', opencode: 'var(--s3)', pi: 'var(--s4)' }
 export const providerColor = (p, i = 0) => PROVIDER_COLORS[p] ?? ['var(--s3)', 'var(--s4)', 'var(--s5)'][i % 3]
 
 // Monotone cubic (Fritsch–Carlson) path through points, so smoothing never overshoots below 0.
@@ -276,7 +276,7 @@ function niceMax(v) {
 
 // Smoothed area per provider over days. series: [{ provider, daily: [{ day, total, costUsd }] }]
 export function areaTrend(series, { metric = 'total', width = 420, height = 200, fmt = compact, axisFmt = fmt, id = 'tr' } = {}) {
-  const label = 'Daily trend by provider'
+  const label = '每日趋势（按提供方）'
   const live = (series || []).filter((s) => s.daily?.length)
   if (!live.length) return empty(width, height, label)
   const days = live[0].daily.map((d) => d.day)
@@ -329,7 +329,7 @@ export function areaTrend(series, { metric = 'total', width = 420, height = 200,
 
 // One thin rounded bar split into segments with 2px gaps. segments: [{ label, value, color }]
 export function segmentBar(segments, { width = 360, height = 10, id = 'sbar' } = {}) {
-  const label = 'Tokens by type'
+  const label = '按类型 Token'
   const live = (segments || []).filter((s) => s.value > 0)
   const total = live.reduce((a, s) => a + s.value, 0)
   let body = `<rect x="0" y="0" width="${width}" height="${height}" rx="${height / 2}" class="track-fill"/>`
@@ -345,7 +345,7 @@ export function segmentBar(segments, { width = 360, height = 10, id = 'sbar' } =
     body = `<clipPath id="${id}-clip"><rect x="0" y="0" width="${width}" height="${height}" rx="${height / 2}"/></clipPath><g clip-path="url(#${id}-clip)">`
     for (const s of live) {
       const w = small.includes(s) ? minW : (s.value / bigTotal) * bigAvail
-      const tip = esc(JSON.stringify({ title: s.label, rows: [['Tokens', s.value], ['Share', `${((s.value / total) * 100).toFixed(1)}%`]] }))
+      const tip = esc(JSON.stringify({ title: s.label, rows: [['Token', s.value], ['占比', `${((s.value / total) * 100).toFixed(1)}%`]] }))
       body += `<rect class="mark" data-tip="${tip}" x="${xpos.toFixed(1)}" y="0" width="${w.toFixed(1)}" height="${height}" fill="${s.color}"/>`
       xpos += w + gap
     }

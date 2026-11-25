@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; base-uri 'none'; form-action 'none'">
-<title>Usage Insights</title>
+<title>用量洞察</title>
 <style>/* PANEL_STYLES */</style>
 </head>
 <body>
@@ -12,65 +12,65 @@
   <section class="hero">
     <div id="banner" class="banner-wrap"></div>
     <div class="hero-text">
-      <h1>Usage Insights</h1>
-      <p id="updated" class="muted">Reading your Claude Code, Codex and OpenCode usage…</p>
+      <h1>用量洞察</h1>
+      <p id="updated" class="muted">正在读取你的 Claude Code、Codex、Pi 与 OpenCode 用量…</p>
     </div>
     <div class="hero-stat"><strong id="hero-total"></strong><span id="hero-sub" class="muted"></span></div>
   </section>
 
-  <nav class="controls" aria-label="Filters">
-    <div class="seg" role="radiogroup" aria-label="View" id="view">
-      <button role="radio" data-view="usage" aria-checked="true">Usage</button><button role="radio" data-view="breakdown" aria-checked="false" tabindex="-1">Breakdown</button>
+  <nav class="controls" aria-label="筛选">
+    <div class="seg" role="radiogroup" aria-label="视图" id="view">
+      <button role="radio" data-view="usage" aria-checked="true">用量</button><button role="radio" data-view="breakdown" aria-checked="false" tabindex="-1">拆解</button>
     </div>
-    <div class="seg" role="radiogroup" aria-label="Range" id="ranges">
-      <button role="radio" data-range="1d" aria-checked="false" tabindex="-1">Today</button><button role="radio" data-range="7d" aria-checked="true">7d</button><button role="radio" data-range="30d" aria-checked="false" tabindex="-1">30d</button><button role="radio" data-range="90d" aria-checked="false" tabindex="-1">90d</button><button role="radio" data-range="all" aria-checked="false" tabindex="-1">All</button><button role="radio" data-range="custom" aria-checked="false" tabindex="-1" aria-controls="custom-range">Custom</button>
+    <div class="seg" role="radiogroup" aria-label="时间范围" id="ranges">
+      <button role="radio" data-range="1d" aria-checked="false" tabindex="-1">今天</button><button role="radio" data-range="7d" aria-checked="true">7 天</button><button role="radio" data-range="30d" aria-checked="false" tabindex="-1">30 天</button><button role="radio" data-range="90d" aria-checked="false" tabindex="-1">90 天</button><button role="radio" data-range="all" aria-checked="false" tabindex="-1">全部</button><button role="radio" data-range="custom" aria-checked="false" tabindex="-1" aria-controls="custom-range">自定义</button>
     </div>
-    <div class="seg" role="radiogroup" aria-label="Measure" id="metric">
-      <button role="radio" data-metric="tokens" aria-checked="true">Tokens</button><button role="radio" data-metric="cost" aria-checked="false" tabindex="-1">Cost</button>
+    <div class="seg" role="radiogroup" aria-label="计量" id="metric">
+      <button role="radio" data-metric="tokens" aria-checked="true">Token</button><button role="radio" data-metric="cost" aria-checked="false" tabindex="-1">成本</button>
     </div>
     <div class="filters-wrap">
       <button class="filter-btn" id="filters-btn" aria-haspopup="dialog" aria-expanded="false" aria-controls="filters-pop">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-        Filters<span class="count" id="filters-count" hidden></span>
+        筛选<span class="count" id="filters-count" hidden></span>
       </button>
-      <div class="popover" id="filters-pop" role="dialog" aria-label="Filters" hidden>
+      <div class="popover" id="filters-pop" role="dialog" aria-label="筛选" hidden>
         <section class="pop-section">
-          <h3 class="pop-title" id="scope-title">Sessions</h3>
+          <h3 class="pop-title" id="scope-title">会话</h3>
           <div class="opt-list" role="radiogroup" aria-labelledby="scope-title" id="scope">
-            <button role="radio" data-scope="all" aria-checked="true"><span class="dot" aria-hidden="true"></span><span><b>All sessions</b><small>Everything on the sources below</small></span></button>
-            <button role="radio" data-scope="worktrees" aria-checked="false" tabindex="-1"><span class="dot" aria-hidden="true"></span><span><b>Orca worktrees only</b><small>Sessions that ran inside a worktree</small></span></button>
+            <button role="radio" data-scope="all" aria-checked="true"><span class="dot" aria-hidden="true"></span><span><b>全部会话</b><small>下列数据源中的全部会话</small></span></button>
+            <button role="radio" data-scope="worktrees" aria-checked="false" tabindex="-1"><span class="dot" aria-hidden="true"></span><span><b>仅 Orca worktree</b><small>在 worktree 中运行的会话</small></span></button>
           </div>
         </section>
         <section class="pop-section" id="sec-providers" hidden>
-          <h3 class="pop-title" id="providers-title">Provider</h3>
+          <h3 class="pop-title" id="providers-title">提供方</h3>
           <div class="opt-list" role="radiogroup" aria-labelledby="providers-title" id="providers"></div>
         </section>
         <section class="pop-section" id="sec-models">
-          <h3 class="pop-title" id="models-title">Models</h3>
-          <label class="sr-only" for="model-search">Search models</label>
-          <input type="search" id="model-search" class="model-search" placeholder="Search models…" autocomplete="off">
-          <button class="link-btn" id="models-all">All models</button>
+          <h3 class="pop-title" id="models-title">模型</h3>
+          <label class="sr-only" for="model-search">搜索模型</label>
+          <input type="search" id="model-search" class="model-search" placeholder="搜索模型…" autocomplete="off">
+          <button class="link-btn" id="models-all">全部模型</button>
           <div class="model-list" role="group" aria-labelledby="models-title" id="models"></div>
         </section>
         <section class="pop-section" id="sec-hosts" hidden>
-          <h3 class="pop-title" id="hosts-title">Machine</h3>
+          <h3 class="pop-title" id="hosts-title">机器</h3>
           <div class="opt-list" role="radiogroup" aria-labelledby="hosts-title" id="hosts"></div>
         </section>
         <section class="pop-section" id="sec-cache">
-          <label class="toggle"><input type="checkbox" id="cache" checked> Include cache tokens</label>
+          <label class="toggle"><input type="checkbox" id="cache" checked> 包含缓存 Token</label>
         </section>
-        <footer class="pop-foot"><button class="link-btn" id="filters-reset">Reset filters</button><button class="link-btn" id="filters-done">Done</button></footer>
+        <footer class="pop-foot"><button class="link-btn" id="filters-reset">重置筛选</button><button class="link-btn" id="filters-done">完成</button></footer>
       </div>
     </div>
-    <div class="chips" id="chips" aria-label="Active filters"></div>
-    <button class="icon-btn" id="refresh" title="Rescan transcripts" aria-label="Rescan transcripts"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
+    <div class="chips" id="chips" aria-label="当前筛选"></div>
+    <button class="icon-btn" id="refresh" title="重新扫描转录" aria-label="重新扫描转录"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
   </nav>
 
-  <section id="custom-range" class="custom-range" aria-label="Custom date range" hidden>
-    <label>Start date<input type="date" id="start-date" aria-describedby="date-hint date-error"></label>
-    <label>End date<input type="date" id="end-date" aria-describedby="date-hint date-error"></label>
-    <button id="date-apply" class="filter-btn">Apply</button>
-    <p id="date-hint" class="muted">Inclusive dates in your local time zone. Use the same date for one day.</p>
+  <section id="custom-range" class="custom-range" aria-label="自定义日期范围" hidden>
+    <label>开始日期<input type="date" id="start-date" aria-describedby="date-hint date-error"></label>
+    <label>结束日期<input type="date" id="end-date" aria-describedby="date-hint date-error"></label>
+    <button id="date-apply" class="filter-btn">应用</button>
+    <p id="date-hint" class="muted">按本地时区的日期，含首尾两天。看单独一天就填相同的日期。</p>
     <p id="date-error" class="date-error" role="alert" hidden></p>
   </section>
   <p id="selection-summary" class="muted" aria-live="polite"></p>
@@ -78,7 +78,7 @@
   <p id="status" class="status" role="status" hidden></p>
   <p id="notice" class="notice" role="status" hidden></p>
   <p id="note" class="notice note" hidden></p>
-  <section id="sources" class="sources" aria-label="Sources" hidden></section>
+  <section id="sources" class="sources" aria-label="数据源" hidden></section>
   <div id="skeleton" class="skeleton" aria-hidden="true">
     <div class="sk-tiles"><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <i class="sk-card tall"></i><i class="sk-card"></i>
@@ -98,72 +98,72 @@
           <div class="totals" id="totals"></div>
         </div>
         <div class="ov-right">
-          <header><h2 id="trend-title">Daily by provider</h2></header>
+          <header><h2 id="trend-title">每日用量（按提供方）</h2></header>
           <div id="trend"></div>
         </div>
       </div>
-      <h2 class="sub-h">Tokens by type</h2>
+      <h2 class="sub-h">各类 Token</h2>
       <div id="typebar"></div>
       <ul class="legend" id="type-legend"></ul>
     </article>
 
     <article class="card">
-      <header><h2>Daily usage</h2><p class="muted" id="daily-sub"></p></header>
+      <header><h2>每日用量</h2><p class="muted" id="daily-sub"></p></header>
       <div id="daily"></div>
       <ul class="legend" id="daily-legend"></ul>
     </article>
 
     <div class="grid-2">
       <article class="card">
-        <header><h2>Activity</h2><span class="pill" id="peak"></span></header>
-        <p class="muted">Last 26 weeks with the selected filters, whatever the date range.</p>
+        <header><h2>活跃度</h2><span class="pill" id="peak"></span></header>
+        <p class="muted">最近 26 周（沿用当前筛选，不受日期范围影响）。</p>
         <div id="calendar" class="scroll-x"></div>
-        <div class="scale"><span class="muted">Less</span><i class="cell q0"></i><i class="cell q1"></i><i class="cell q2"></i><i class="cell q3"></i><i class="cell q4"></i><span class="muted">More</span></div>
+        <div class="scale"><span class="muted">少</span><i class="cell q0"></i><i class="cell q1"></i><i class="cell q2"></i><i class="cell q3"></i><i class="cell q4"></i><span class="muted">多</span></div>
       </article>
       <article class="card">
-        <header><h2>Rhythm</h2></header>
-        <p class="muted">When you work in the date range, by weekday and hour.</p>
+        <header><h2>作息节律</h2></header>
+        <p class="muted">日期范围内，你在一周各天的各时段做了多少。</p>
         <div id="punch" class="scroll-x"></div>
       </article>
     </div>
 
     <article class="card">
-      <header><h2>Ranking</h2>
-        <div class="seg" role="radiogroup" aria-label="Rank by" id="bd-mode"><button role="radio" data-mode="model" aria-checked="true">By model</button><button role="radio" data-mode="day" aria-checked="false" tabindex="-1">By day</button><button role="radio" data-mode="day-model" aria-checked="false" tabindex="-1">Date × model</button></div>
+      <header><h2>排行</h2>
+        <div class="seg" role="radiogroup" aria-label="排序依据" id="bd-mode"><button role="radio" data-mode="model" aria-checked="true">按模型</button><button role="radio" data-mode="day" aria-checked="false" tabindex="-1">按天</button><button role="radio" data-mode="day-model" aria-checked="false" tabindex="-1">日期 × 模型</button></div>
       </header>
-      <label class="rank-sort" for="rank-sort">Sort rows
-        <select id="rank-sort"><option value="default">Default</option><option value="date-desc">Date: newest first</option><option value="date-asc">Date: oldest first</option><option value="model-asc">Model: A–Z</option><option value="tokens-desc">Tokens: highest first</option><option value="tokens-asc">Tokens: lowest first</option></select>
+      <label class="rank-sort" for="rank-sort">排序
+        <select id="rank-sort"><option value="default">默认</option><option value="date-desc">日期：最新在前</option><option value="date-asc">日期：最旧在前</option><option value="model-asc">模型：A–Z</option><option value="tokens-desc">Token：从高到低</option><option value="tokens-asc">Token：从低到高</option></select>
       </label>
       <p id="rank-note" class="muted"></p>
-      <div class="table-wrap" tabindex="0" role="region" aria-label="Usage ranking, scroll sideways for more columns"><table class="bd" id="breakdown"></table></div>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="用量排行，左右滚动查看更多列"><table class="bd" id="breakdown"></table></div>
     </article>
 
     <div class="grid-2">
       <article class="card">
-        <header><h2>Token mix</h2></header>
+        <header><h2>Token 构成</h2></header>
         <div class="mix"><div id="donut"></div><ul class="legend legend-col" id="mix-legend"></ul></div>
       </article>
       <article class="card">
-        <header><h2>Projects</h2></header>
+        <header><h2>项目</h2></header>
         <div id="projects"></div>
       </article>
     </div>
 
-    <p class="footnote muted">Read from Claude Code and Codex transcripts and the local OpenCode database on this machine, including Orca's account homes, and the folders and SSH hosts in Settings. Account histories are combined. No usage data is sent anywhere. Cost is an estimate at list API prices.</p>
+    <p class="footnote muted">读自本机的 Claude Code、Codex、Pi 转录与本地 OpenCode 数据库（含 Orca 的账号目录），以及设置里添加的文件夹和 SSH 主机。多个账号的历史会合并。用量数据不会发送到任何地方。成本按 API 标价估算。</p>
   </section>
-  <section id="bd" aria-label="Breakdown" hidden>
+  <section id="bd" aria-label="拆解" hidden>
     <p id="bd-status" class="status" role="status" hidden></p>
-    <button id="bd-stale" class="stale" hidden>New usage since this view · Update</button>
+    <button id="bd-stale" class="stale" hidden>此视图之后有新的用量 · 更新</button>
     <div id="bd-body" hidden>
       <article class="card" id="bd-head"></article>
       <article class="card">
-        <header><h2>Where it went</h2><span class="muted small">Projects › folders › files, commands and tools</span></header>
-        <nav class="crumbs" id="bd-crumbs" aria-label="Location"></nav>
+        <header><h2>钱花在哪</h2><span class="muted small">项目 › 文件夹 › 文件、命令与工具</span></header>
+        <nav class="crumbs" id="bd-crumbs" aria-label="位置"></nav>
         <div id="bd-tree"></div>
       </article>
       <section aria-labelledby="bd-find-title" class="findings-wrap">
-        <h2 id="bd-find-title">Patterns worth a look</h2>
-        <p class="muted small">Each card is one pattern and what it cost. They overlap, so they don't add up. Explain gives you a prompt for your own agent to find the cause.</p>
+        <h2 id="bd-find-title">值得关注的花费模式</h2>
+        <p class="muted small">每张卡片是一种模式及其花费。它们会互相重叠，所以不能相加。点“解释”会生成一段提示词，交给你的 agent 去查原因。</p>
         <div class="findings" id="bd-findings"></div>
       </section>
       <article class="card" id="bd-not" hidden></article>
@@ -171,20 +171,20 @@
     </div>
   </section>
 
-  <section id="prices" class="prices" aria-label="Prices" hidden></section>
+  <section id="prices" class="prices" aria-label="价格" hidden></section>
 
   <dialog id="sync-dlg" aria-labelledby="sync-title">
-    <header><h2 id="sync-title">Sync prices</h2><button class="icon-btn" data-close aria-label="Close">✕</button></header>
-    <p class="muted small">Fetches public price lists from LiteLLM and models.dev. Nothing about your usage is sent. Only the rows you tick are applied, and Undo puts the previous prices back.</p>
+    <header><h2 id="sync-title">同步价格</h2><button class="icon-btn" data-close aria-label="关闭">✕</button></header>
+    <p class="muted small">从 LiteLLM 与 models.dev 拉取公开价目表。不会发送任何关于你的用量的信息。只有勾选的行会被应用，点“撤销”可恢复原来的价格。</p>
     <div id="sync-body" class="dlg-body"></div>
-    <footer><button class="btn" data-close>Cancel</button><button class="btn primary" id="sync-apply" disabled>Apply ticked</button></footer>
+    <footer><button class="btn" data-close>取消</button><button class="btn primary" id="sync-apply" disabled>应用勾选项</button></footer>
   </dialog>
 
   <dialog id="explain-dlg" aria-labelledby="explain-title">
-    <header><h2 id="explain-title">Explain this pattern</h2><button class="icon-btn" data-close aria-label="Close">✕</button></header>
-    <p class="muted small">Paste this into Claude Code or Codex in any folder. The agent reads the transcript excerpts listed in the prompt and sends them to its model provider, like any other file it reads.</p>
-    <textarea id="explain-text" readonly rows="12" spellcheck="false" aria-label="Prompt"></textarea>
-    <footer><span class="muted small" id="explain-size"></span><button class="btn" data-close>Close</button><button class="btn primary" id="explain-copy">Copy prompt</button></footer>
+    <header><h2 id="explain-title">解释这个模式</h2><button class="icon-btn" data-close aria-label="关闭">✕</button></header>
+    <p class="muted small">把下面的内容粘贴到任意文件夹里的 Claude Code、Codex 或 Pi 中。agent 会读取提示词里列出的转录片段，并像读其它文件一样把它们发给模型提供方。</p>
+    <textarea id="explain-text" readonly rows="12" spellcheck="false" aria-label="提示词"></textarea>
+    <footer><span class="muted small" id="explain-size"></span><button class="btn" data-close>关闭</button><button class="btn primary" id="explain-copy">复制提示词</button></footer>
   </dialog>
   <div id="tip" class="tip" role="tooltip" hidden></div>
 </main>

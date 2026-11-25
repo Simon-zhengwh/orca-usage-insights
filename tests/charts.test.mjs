@@ -18,9 +18,9 @@ test('stackedBars renders one mark per day with tooltips and handles empty', () 
   const s = stackedBars([day('2026-10-28', 100), day('2026-10-29', 0), day('2026-10-30', 300)])
   wellFormed(s)
   assert.equal((s.match(/class="mark"/g) || []).length, 3)
-  assert.match(s, /Oct 28/)
-  assert.match(stackedBars([]), /No usage yet/)
-  assert.match(stackedBars([day('2026-10-28', 0)]), /No usage yet/)
+  assert.match(s, /10月28日/)
+  assert.match(stackedBars([]), /暂无用量/)
+  assert.match(stackedBars([day('2026-10-28', 0)]), /暂无用量/)
 })
 
 test('calendarHeatmap places every day and uses quantile levels', () => {
@@ -37,7 +37,7 @@ test('punchCard draws 168 cells', () => {
   const s = punchCard(grid)
   wellFormed(s)
   assert.equal((s.match(/<circle/g) || []).length, 168)
-  assert.match(punchCard([]), /No usage yet/)
+  assert.match(punchCard([]), /暂无用量/)
 })
 
 test('donut skips zero segments and escapes labels', () => {
@@ -82,7 +82,7 @@ test('areaTrend draws one smoothed line per provider with hover columns', () => 
   assert.equal((s.match(/stroke-width="2"/g) || []).length, 2)
   assert.equal((s.match(/class="mark xhair"/g) || []).length, 4)
   wellFormed(areaTrend([mk('claude', [1])]))
-  assert.match(areaTrend([mk('claude', [0, 0])]), /No usage yet/)
+  assert.match(areaTrend([mk('claude', [0, 0])]), /暂无用量/)
   assert.match(areaTrend([mk('claude', [5, 9])], { metric: 'costUsd', fmt: (v) => '$' + v }), /\$/)
 })
 
@@ -109,6 +109,6 @@ test('dayTicks labels every day when there is room and always keeps the latest',
 test('stackedBars labels each of 7 days with its weekday', () => {
   const days = ['2026-10-28', '2026-10-29', '2026-10-30', '2026-10-31', '2026-11-01', '2026-11-02', '2026-11-03']
   const s = stackedBars(days.map((d, i) => day(d, i + 1)), { width: 900 })
-  for (const d of ['Oct 28', 'Oct 29', 'Oct 30', 'Oct 31', 'Nov 1', 'Nov 2', 'Nov 3']) assert.ok(s.includes(`>${d}<`), d)
-  assert.match(s, />Tue</)
+  for (const d of ['10月28日', '10月29日', '10月30日', '10月31日', '11月1日', '11月2日', '11月3日']) assert.ok(s.includes(`>${d}<`), d)
+  assert.match(s, />周二</)
 })

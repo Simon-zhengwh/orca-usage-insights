@@ -110,7 +110,7 @@ export async function listTranscripts({ fs, platform = process.platform, roots, 
     const errorsBefore = run.errors;
     const top = await canonicalDir(fs, folder);
     if (top === null) {
-      Object.assign(entry, source === 'default' ? { state: 'empty' } : { state: 'warning', message: 'Folder not found' });
+      Object.assign(entry, source === 'default' ? { state: 'empty' } : { state: 'warning', message: '文件夹不存在' });
       continue;
     }
     if (source === 'extra') {
@@ -118,7 +118,7 @@ export async function listTranscripts({ fs, platform = process.platform, roots, 
       try {
         st = await fs.stat(top);
       } catch (error) {
-        Object.assign(entry, { state: 'warning', message: `Cannot open folder (${error?.code ?? 'error'})` });
+        Object.assign(entry, { state: 'warning', message: `无法打开文件夹（${error?.code ?? 'error'}）` });
         if (error?.code !== 'ENOENT' && error?.code !== 'ENOTDIR') {
           entry.dirs.push(top);
           fail(top);
@@ -126,7 +126,7 @@ export async function listTranscripts({ fs, platform = process.platform, roots, 
         continue;
       }
       if (!st.isDirectory()) {
-        Object.assign(entry, { state: 'warning', message: 'Not a folder' });
+        Object.assign(entry, { state: 'warning', message: '不是文件夹' });
         continue;
       }
     }
@@ -159,7 +159,7 @@ export async function listTranscripts({ fs, platform = process.platform, roots, 
       }
       entry.paths.add(canonical);
     }
-    if (run.errors > errorsBefore) Object.assign(entry, { state: 'warning', message: 'Some files could not be read' });
+    if (run.errors > errorsBefore) Object.assign(entry, { state: 'warning', message: '部分文件读取失败' });
   }
   return { found: out, folders, stats };
 }

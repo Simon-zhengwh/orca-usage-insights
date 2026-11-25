@@ -3,7 +3,7 @@
   Usage Insights
 </h1>
 
-<h3 align="center">See how much Claude Code, Codex and OpenCode you actually use, inside Orca.</h3>
+<h3 align="center">See how much Claude Code, Codex, Pi and OpenCode you actually use, inside Orca.</h3>
 
 <p align="center">
   <a href="#install">Install</a> •
@@ -30,7 +30,7 @@ Needs Orca 1.4.248 or newer.
 
 ## What you get
 
-The panel reads your Claude Code and Codex transcripts, plus the local OpenCode database, and turns them into:
+The panel reads your Claude Code, Codex and Pi transcripts, plus the local OpenCode database, and turns them into:
 
 * **Totals** for today, 7 days, 30 days, 90 days, everything or dates you pick: tokens, estimated cost, today, cache hit rate, sessions and your streak.
 * **Daily charts** of tokens or cost, per token type and per provider.
@@ -79,7 +79,7 @@ Each pattern has an **Explain** button. It gives you a prompt to paste into Clau
   <img src="images/screenshot-explain.png" alt="The Explain dialog with a prompt for one pattern, ready to copy" width="720">
 </p>
 
-`≈` marks a split that is estimated (several tool results in one turn are split by size). Spend that can't be split, such as usage on SSH hosts or in OpenCode, is listed under **Not analysed** with the reason. Breakdown follows the range, custom dates included, but not the model or cache-token filters. The first Breakdown reads the transcripts changed within the range, which takes a few seconds on a big history; after that only new lines are read.
+`≈` marks a split that is estimated (several tool results in one turn are split by size). Spend that can't be split, such as usage on SSH hosts, in OpenCode or in Pi, is listed under **Not analysed** with the reason. Breakdown follows the range, custom dates included, but not the model or cache-token filters. The first Breakdown reads the transcripts changed within the range, which takes a few seconds on a big history; after that only new lines are read.
 
 ## Prices
 
@@ -112,11 +112,13 @@ The first entry changes one price of a known model, the second adds a new model,
 
 ## More machines and folders
 
-By default the plugin reads this machine's `~/.claude`, `~/.config/claude` and `~/.codex`, plus `CLAUDE_CONFIG_DIR` and `CODEX_HOME` when they're set, and every Claude profile and Codex account home Orca manages. A new account shows up on the next scan.
+By default the plugin reads this machine's `~/.claude`, `~/.config/claude`, `~/.codex` and `~/.pi/agent`, plus `CLAUDE_CONFIG_DIR`, `CODEX_HOME` and `PI_CODING_AGENT_DIR` when they're set, and every Claude profile and Codex account home Orca manages. A new account shows up on the next scan.
 
 OpenCode 2.x is read from `${XDG_DATA_HOME:-~/.local/share}/opencode/opencode.db` (on Windows, `%USERPROFILE%\.local\share\opencode`, not `%APPDATA%`), or from the file `OPENCODE_DB` names. Channel builds such as `opencode-dev.db` count too, and installs older than 2.x are read from their old tables. The database is opened read-only and only changed messages are read. **Refresh** also drops messages deleted in OpenCode. It needs `node:sqlite` (Node 22.5 or newer, which Orca ships); without it the source shows a warning and everything else still works. SSH hosts don't read OpenCode yet.
 
-Histories from all of them are combined. A transcript that several accounts share counts once, and so does a hard link or a copied Codex turn. Codex turns are matched by turn ID, so a session resumed or copied under a new session ID still counts once. Older Codex logs have no turn IDs and can't be matched across sessions. The transcripts don't say which subscription paid for a turn, so the totals cover all accounts together. The source strip under the filters shows each folder's status, files, turns and latest usage, and a transcript that several folders share is counted in each of them there.
+Pi sessions are read from `~/.pi/agent/sessions` (or `PI_CODING_AGENT_DIR` when it is set), one JSONL file per session. Each assistant message that reports usage counts once; a session resumed or copied under a new session ID is matched by its response ID. Pi price lists are your own, so models from a custom gateway usually show under **Not analysed** with a `+` next to the total.
+
+Histories from all of them are combined. A transcript that several accounts share counts once, and so does a hard link or a copied Codex turn. Codex turns are matched by turn ID and Pi turns by response ID, so a session resumed or copied under a new session ID still counts once. Older Codex logs have no turn IDs and can't be matched across sessions. The transcripts don't say which subscription paid for a turn, so the totals cover all accounts together. The source strip under the filters shows each folder's status, files, turns and latest usage, and a transcript that several folders share is counted in each of them there.
 
 Click a folder there to leave it out, and click it again to count it again. A folder you turn off stays off after a restart; the list is in Settings as **Turned-off transcript folders**. Turning one back on doesn't read its files again.
 
@@ -127,6 +129,7 @@ You can add more in **Settings → Plugins → Usage Insights**, one per line:
 ```text
 \\wsl.localhost\Ubuntu\home\you\.claude
 ~/backup/.claude
+~/backup/.pi/agent
 ```
 
 **SSH hosts**, to include usage from your other machines. Use a name from `~/.ssh/config` or `user@host`. Add `name = host` to show a short name instead of the address:
@@ -157,7 +160,7 @@ The first open after updating from 1.1.0 reads everything once, like a first ins
 
 Your transcripts stay on your machines. The plugin makes no network requests of its own, with two exceptions you start yourself: the SSH connections you add, and **Sync prices**, which downloads the public price lists from `raw.githubusercontent.com` (LiteLLM) and `models.dev` when you click it. Nothing about your usage is sent with those requests.
 
-**What it reads:** your Claude Code and Codex transcripts, including Codex's compressed `.jsonl.zst` files, and your local OpenCode SQLite database. Breakdown does not read OpenCode yet, so its spend shows under **Not analysed**.
+**What it reads:** your Claude Code, Codex and Pi transcripts, including Codex's compressed `.jsonl.zst` files, and your local OpenCode SQLite database. Breakdown does not read OpenCode or Pi yet, so their spend shows under **Not analysed**.
 
 **What it keeps** in its cache folder, so later opens are fast:
 

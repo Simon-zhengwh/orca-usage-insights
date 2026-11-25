@@ -180,10 +180,10 @@ test('manifest is the trusted worker with exactly the declared keys', () => {
   assert.equal(manifest.pluginApi, 1)
   assert.deepEqual(manifest.engines, { orca: '>=1.4.248' })
   assert.deepEqual(Object.keys(manifest.contributes).sort(), ['commands', 'events', 'panels', 'settings', 'statusBarItems'])
-  assert.deepEqual(manifest.contributes.statusBarItems, [{ id: 'today', text: '—', icon: 'bar-chart-3', tooltip: 'Usage Insights', command: 'toggleSidebar' }])
-  assert.deepEqual(manifest.contributes.commands, [{ id: 'toggleSidebar', title: 'Usage Insights: Show or hide the right sidebar', action: 'sidebar.right.toggle' }])
+  assert.deepEqual(manifest.contributes.statusBarItems, [{ id: 'today', text: '—', icon: 'bar-chart-3', tooltip: '用量洞察', command: 'toggleSidebar' }])
+  assert.deepEqual(manifest.contributes.commands, [{ id: 'toggleSidebar', title: '用量洞察：显示或隐藏右侧边栏', action: 'sidebar.right.toggle' }])
   assert.deepEqual(manifest.contributes.events, [{ on: 'agent.status.changed' }])
-  assert.deepEqual(manifest.contributes.panels, [{ id: 'insights', title: 'Usage Insights', icon: 'bar-chart-3', entry: 'panel/index.html' }])
+  assert.deepEqual(manifest.contributes.panels, [{ id: 'insights', title: '用量洞察', icon: 'bar-chart-3', entry: 'panel/index.html' }])
   assert.deepEqual(manifest.capabilities, [{ kind: 'workspace:read' }, { kind: 'settings:own' }, { kind: 'agent:read' }])
   assert.ok(existsSync(path.join(root, manifest.main)), 'main exists')
   assert.ok(existsSync(path.join(root, manifest.contributes.panels[0].entry)), 'panel entry exists')
@@ -199,17 +199,17 @@ test('manifest declares the source settings as multiline strings', () => {
     assert.equal(setting.default, '')
     assert.ok(setting.description.length > 0 && setting.placeholder.length > 0)
   }
-  assert.equal(manifest.contributes.settings[0].title, 'Extra Claude Code folders')
-  assert.equal(manifest.contributes.settings[1].title, 'Extra Codex folders')
-  assert.equal(manifest.contributes.settings[2].title, 'SSH hosts')
-  assert.match(manifest.contributes.settings[2].description, /Linux or macOS/)
-  assert.equal(manifest.contributes.settings[3].title, 'Turned-off transcript folders')
+  assert.equal(manifest.contributes.settings[0].title, '额外的 Claude Code 文件夹')
+  assert.equal(manifest.contributes.settings[1].title, '额外的 Codex 文件夹')
+  assert.equal(manifest.contributes.settings[2].title, 'SSH 主机')
+  assert.match(manifest.contributes.settings[2].description, /Linux 或 macOS/)
+  assert.equal(manifest.contributes.settings[3].title, '已关闭的转录文件夹')
 })
 
 test('manifest declares the Default range setting as a picker of the panel ranges', () => {
   const manifest = JSON.parse(readFileSync(path.join(root, 'orca-plugin.json'), 'utf8'))
   const setting = manifest.contributes.settings.find((s) => s.key === 'defaultRange')
-  assert.equal(setting.title, 'Default range')
+  assert.equal(setting.title, '默认范围')
   assert.equal(setting.type, 'string')
   assert.equal(setting.default, '7d')
   assert.deepEqual(setting.enum, ['1d', '7d', '30d', '90d', 'all'])
@@ -468,7 +468,7 @@ test('settings folders are trimmed, ~ expands, comments and blanks drop, relativ
   await mock.handlers.get('usage.report')({});
   await mock.handlers.get('usage.report')({});
   const last = scanner.calls.roots.at(-1);
-  assert.deepEqual(last, { claude: [path.join(home, 'backup', '.claude'), abs], codex: [home], disabled: [] });
+  assert.deepEqual(last, { claude: [path.join(home, 'backup', '.claude'), abs], codex: [home], pi: [], disabled: [] });
   assert.equal(mock.logs.filter((line) => /relative\/dir/.test(line)).length, 1, 'logged once across scans');
   await worker.stop();
 });
@@ -505,7 +505,7 @@ test('an SSH host the source refuses is skipped with one log line', async () => 
   await worker.ready;
   await mock.handlers.get('usage.report')({});
   await mock.handlers.get('usage.report')({});
-  assert.equal(mock.logs.filter((line) => /SSH host "-bad" was skipped/.test(line)).length, 1);
+  assert.equal(mock.logs.filter((line) => /SSH 主机 “-bad” 已跳过/.test(line)).length, 1);
   const report = await mock.handlers.get('usage.report')({});
   assert.deepEqual(report.sources.map((s) => s.id), ['local']);
   await worker.stop();
@@ -521,7 +521,7 @@ test('a failed settings read logs once, scans with no folders or hosts, and neve
   const first = await mock.handlers.get('usage.report')({});
   await mock.handlers.get('usage.report')({});
   assert.equal(mock.logs.filter((line) => /could not read settings/.test(line)).length, 1);
-  assert.deepEqual(scanner.calls.roots.at(-1), { claude: [], codex: [], disabled: [] });
+  assert.deepEqual(scanner.calls.roots.at(-1), { claude: [], codex: [], pi: [], disabled: [] });
   assert.equal(ssh.info.size, 0);
   assert.deepEqual(first.sources.map((s) => s.id), ['local']);
   mock.failSettings = false;
@@ -660,9 +660,9 @@ test('status and folder entries from the scan show on report.sources, with local
   await worker.ready;
   const report = await mock.handlers.get('usage.report')({});
   const [local, missing, present] = report.sources;
-  assert.deepEqual([local.id, local.kind, local.label], ['local', 'local', 'This machine']);
+  assert.deepEqual([local.id, local.kind, local.label], ['local', 'local', '本机']);
   assert.equal(local.state, 'warning');
-  assert.equal(local.message, '2 transcript files could not be read');
+  assert.equal(local.message, '2 个转录文件 读取失败');
   assert.equal(local.records, 1);
   assert.deepEqual([missing.id, missing.kind, missing.label, missing.state, missing.message], ['folder:' + folder, 'folder', folder, 'warning', 'Folder not found']);
   assert.deepEqual([present.id, present.state, present.files, present.records], ['folder:' + folder + '-codex', 'ok', 3, 4]);
@@ -677,7 +677,7 @@ test('skipped compressed files show on the This machine status', async () => {
   await worker.ready;
   const [local] = (await mock.handlers.get('usage.report')({})).sources;
   assert.equal(local.state, 'warning');
-  assert.equal(local.message, '1 transcript file could not be read; 3 compressed Codex files skipped: zstd unavailable; 1 compressed Codex file skipped: too large');
+  assert.equal(local.message, '1 个转录文件 读取失败; 3 个压缩的 Codex 文件已跳过：zstd 不可用; 1 个压缩的 Codex 文件已跳过：太大');
   await worker.stop();
 });
 
@@ -805,6 +805,7 @@ test('activate scans the real roots and deactivate flushes the cache under the c
     XDG_CONFIG_HOME: path.join(base, 'config'),
     CLAUDE_CONFIG_DIR: path.join(base, 'claude'),
     CODEX_HOME: path.join(base, 'codex'),
+    PI_CODING_AGENT_DIR: path.join(base, 'pi'),
     ORCA_USER_DATA_PATH: path.join(base, 'orca-user-data'),
   };
   const saved = Object.fromEntries(Object.keys(env).map((key) => [key, process.env[key]]));

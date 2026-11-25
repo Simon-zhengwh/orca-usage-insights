@@ -6,17 +6,31 @@ import { tableFromRecords } from '../src/core/table.mjs';
 import {
   createClaudeParser,
   createCodexParser,
+  createPiParser,
   parseClaudeTranscript,
   parseCodexTranscript,
+  parsePiTranscript,
 } from '../src/core/records.mjs';
 
 const claudeText = readFileSync(new URL('./fixtures/claude.jsonl', import.meta.url), 'utf8');
 const codexText = readFileSync(new URL('./fixtures/codex.jsonl', import.meta.url), 'utf8');
+const piText = readFileSync(new URL('./fixtures/pi.jsonl', import.meta.url), 'utf8');
 // Each element keeps its trailing newline, so slices stay on line boundaries.
 const claudeLines = claudeText.split(/(?<=\n)/);
 const codexLines = codexText.split(/(?<=\n)/);
+const piLines = piText.split(/(?<=\n)/);
 const claudeCtx = { sessionId: 'ctx-session', project: 'ctx-project' };
 const codexCtx = { sessionId: 'rollout-1', project: 'fallback' };
+const piCtx = { sessionId: 'ctx-session', project: 'ctx-project' };
+
+const piExpected = [
+  // One record per provider response; the copy of the same response replaces it, so the last line wins.
+  { key: 'pi:resp_a1', provider: 'pi', ts: '2026-10-01T09:01:00.000Z', model: 'deepseek-v4.1-flash', project: 'theta', sessionId: 'pi-sess-a', input: 100, output: 41, cacheRead: 1000, cacheWrite: 50, cacheWrite1h: 0, cwd: '/home/me/work/theta', host: 'local' },
+  // No model and no response id: the model_change line supplies the model, the line id the key.
+  { key: 'pi:pi-sess-a:a2', provider: 'pi', ts: '2026-10-01T09:02:00.000Z', model: 'deepseek-v4.1-flash', project: 'theta', sessionId: 'pi-sess-a', input: 200, output: 20, cacheRead: 0, cacheWrite: 0, cacheWrite1h: 0, cwd: '/home/me/work/theta', host: 'local' },
+  // A failed call that still billed tokens is usage; with no response id the line id keys it.
+  { key: 'pi:pi-sess-a:a3', provider: 'pi', ts: '2026-10-01T09:03:00.000Z', model: 'glm-5.3', project: 'theta', sessionId: 'pi-sess-a', input: 5, output: 1, cacheRead: 0, cacheWrite: 0, cacheWrite1h: 0, cwd: '/home/me/work/theta', host: 'local' },
+];
 
 const claudeExpected = [
   // msg_2 streams two lines with the same key; the final one wins.
@@ -42,6 +56,37 @@ const codexExpected = [
   // Cached tokens above input clamp the uncached input to zero.
   { key: '["codex","s","cx-1","gpt-5.1-codex-mini","2026-10-01T09:07:00.000Z","","5,9,1,0,0",0]', provider: 'codex', ts: '2026-10-01T09:07:00.000Z', model: 'gpt-5.1-codex-mini', project: 'gamma', sessionId: 'rollout-1', input: 0, output: 1, cacheRead: 9, cacheWrite: 0, cacheWrite1h: 0, cwd: '/home/me/work/gamma', host: 'local' },
 ];
+
+test('pi fixture counts only assistant usage, dedupes provider responses and keeps thinking in output', () => {
+  assert.deepEqual(parsePiTranscript(piText, piCtx), piExpected);
+});
+
+test('pi tool results, user turns and a broken line never become usage', () => {
+  const toolLine = piLines.find((line) => line.includes('toolResult'));
+  assert.deepEqual(parsePiTranscript(toolLine, piCtx), []);
+  const userLine = piLines.find((line) => line.includes('"role":"user"'));
+  assert.deepEqual(parsePiTranscript(userLine, piCtx), []);
+});
+
+test('pi without a session line falls back to the context project, session and model', () => {
+  const [record] = parsePiTranscript(piLines.find((line) => line.includes('"errorMessage"')), piCtx);
+  assert.equal(record.project, 'ctx-project');
+  assert.equal(record.sessionId, 'ctx-session');
+  assert.equal(record.cwd, '');
+});
+
+test('pi parser state carries the session, project, cwd and model across pushes', () => {
+  const first = createPiParser(piCtx);
+  first.push(piLines.slice(0, 6).join(''));
+  const saved = JSON.parse(JSON.stringify(first.state()));
+  const resumed = createPiParser(piCtx, saved);
+  resumed.push(piLines.slice(6).join(''));
+  assert.deepEqual(resumed.records(), piExpected);
+});
+
+test('pi records carry the context host', () => {
+  assert.deepEqual([...new Set(parsePiTranscript(piText, { ...piCtx, host: 'ssh:box' }).map((r) => r.host))], ['ssh:box']);
+});
 
 test('claude fixture yields deduped records and skips synthetic, malformed and untimed lines', () => {
   assert.deepEqual(parseClaudeTranscript(claudeText, claudeCtx), claudeExpected);

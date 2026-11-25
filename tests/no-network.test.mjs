@@ -119,6 +119,8 @@ test('activate, poll and usage.report never call the network', async (t) => {
     XDG_CONFIG_HOME: path.join(base, 'config'),
     CLAUDE_CONFIG_DIR: path.join(base, 'claude'),
     CODEX_HOME: path.join(base, 'codex'),
+    PI_CODING_AGENT_DIR: path.join(base, 'pi'),
+    ORCA_USER_DATA_PATH: path.join(base, 'orca-user-data'),
   };
   const saved = Object.fromEntries(Object.keys(env).map((key) => [key, process.env[key]]));
   t.after(() => {

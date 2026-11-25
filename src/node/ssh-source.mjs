@@ -344,11 +344,11 @@ export function createSshSource({
 // Turns ssh failures into one line a person can act on.
 export function explain(error) {
   const msg = String(error?.message ?? error);
-  if (error?.code === 'ENOENT') return 'ssh was not found on this machine. Install OpenSSH or add it to PATH.';
-  if (/Permission denied/i.test(msg)) return 'SSH login was refused. Use a key or ssh-agent; passwords are not supported.';
-  if (/Could not resolve hostname|Name or service not known/i.test(msg)) return 'Unknown host. Check the name, or add it to ~/.ssh/config.';
-  if (/Host key verification failed/i.test(msg)) return 'Host key not trusted yet. Connect once with ssh in a terminal to accept it.';
-  if (/Connection (timed out|refused)|ETIMEDOUT|No route to host/i.test(msg)) return `Could not connect: ${msg}`;
+  if (error?.code === 'ENOENT') return '本机找不到 ssh 命令。请安装 OpenSSH 或把它加到 PATH 里。';
+  if (/Permission denied/i.test(msg)) return 'SSH 登录被拒。请用密钥或 ssh-agent，本插件不支持密码登录。';
+  if (/Could not resolve hostname|Name or service not known/i.test(msg)) return '主机名无法解析。请检查名称，或把它加到 ~/.ssh/config。';
+  if (/Host key verification failed/i.test(msg)) return '主机密钥还未被信任。先在终端里用 ssh 连一次并确认。';
+  if (/Connection (timed out|refused)|ETIMEDOUT|No route to host/i.test(msg)) return `无法连接：${msg}`;
   return msg;
 }
 

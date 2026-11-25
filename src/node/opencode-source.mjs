@@ -36,7 +36,7 @@ export function createOpencodeSource({
       found = await findOpencodeDbs({ fs, platform, env, home });
     } catch (error) {
       out.errors++;
-      out.folder = folder({ path: 'opencode', state: 'warning', message: `Cannot list OpenCode data (${error?.code ?? 'error'})` });
+      out.folder = folder({ path: 'opencode', state: 'warning', message: `无法列出 OpenCode 数据（${error?.code ?? 'error'}）` });
       return out;
     }
     if (found.missing) {

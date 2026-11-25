@@ -58,8 +58,8 @@ export function createScanner({
   let store = createRecordStore({ names });
   // OpenCode databases are a second kind of source; their tables intern into the same dictionary.
   const opencode = createOpencodeSource({ platform, env, home, fs, names, cacheFile: opencodeCacheFile });
-  let extra = { claude: [], codex: [], disabled: [] }; // folders from settings, see setExtraRoots
-  let extraKey = '[[],[],[]]';
+  let extra = { claude: [], codex: [], pi: [], disabled: [] }; // folders from settings, see setExtraRoots
+  let extraKey = '[[],[],[],[]]';
   let rootsGen = 0;
   let dirty = false;
   const touched = new Set(); // paths read or dropped since the last save
@@ -83,11 +83,12 @@ export function createScanner({
   function setExtraRoots(next) {
     const claude = listOfStrings(next?.claude);
     const codex = listOfStrings(next?.codex);
+    const pi = listOfStrings(next?.pi);
     const disabled = listOfStrings(next?.disabled);
-    const key = JSON.stringify([claude, codex, disabled]);
+    const key = JSON.stringify([claude, codex, pi, disabled]);
     if (key === extraKey) return;
     extraKey = key;
-    extra = { claude, codex, disabled };
+    extra = { claude, codex, pi, disabled };
     rootsGen++;
     last = null;
   }

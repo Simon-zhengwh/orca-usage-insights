@@ -179,10 +179,10 @@ test('ssh failures become a readable error status and keep earlier records', asy
   });
   const r = await source.scan();
   assert.equal(r.status.state, 'error');
-  assert.match(r.status.message, /key or ssh-agent/);
+  assert.match(r.status.message, /密钥或 ssh-agent/);
   const missing = createSshSource({ host: 'box', command: () => ['definitely-not-ssh-xyz', []], spawn });
   const m = await missing.scan();
-  assert.match(m.status.message, /ssh was not found/);
+  assert.match(m.status.message, /找不到 ssh/);
   assert.equal(fail, false);
 });
 
@@ -219,8 +219,8 @@ for (const version of [3, 4]) {
 }
 
 test('explain maps common ssh errors', () => {
-  assert.match(explain(new Error('ssh: Could not resolve hostname x: Name or service not known')), /Unknown host/);
-  assert.match(explain(new Error('Host key verification failed.')), /Host key/);
+  assert.match(explain(new Error('ssh: Could not resolve hostname x: Name or service not known')), /无法解析/);
+  assert.match(explain(new Error('Host key verification failed.')), /主机密钥/);
 });
 
 test('parseListing rejects a cut-off listing; read parser frames files', () => {

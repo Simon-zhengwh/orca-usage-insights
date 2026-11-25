@@ -10,6 +10,10 @@ import { timestampParser } from './time.mjs';
 const CLAUDE_MARKER = '"usage"';
 export const CLAUDE_MARKERS = [CLAUDE_MARKER];
 export const CODEX_MARKERS = ['token_count', 'turn_context', 'session_meta'];
+// Pi writes one `usage` object per assistant message, and the session and model_change lines carry the
+// cwd, project and model a later message may leave out, so all three are marked.
+const PI_USAGE_MARKER = '"usage"';
+export const PI_MARKERS = [PI_USAGE_MARKER, '"type":"session"', '"model_change"'];
 const TOTAL_KEYS = ['input_tokens', 'cached_input_tokens', 'output_tokens', 'reasoning_output_tokens', 'total_tokens'];
 const MIN_YEAR = 2020;
 
@@ -23,6 +27,72 @@ export function parseCodexTranscript(text, ctx) {
   const parser = createCodexParser(ctx);
   parser.push(`${text}\n`);
   return parser.records();
+}
+
+export function parsePiTranscript(text, ctx) {
+  const parser = createPiParser(ctx);
+  parser.push(`${text}\n`);
+  return parser.records();
+}
+
+// Pi (and Orca's Pi chats) keep one JSONL per session: a `session` line with cwd, `model_change`
+// lines, and `message` lines whose assistant `usage` holds input (uncached), output (thinking
+// included), cacheRead and cacheWrite. totalTokens is input + output + cacheRead, so reasoning is
+// never added again. Nothing is split by cache TTL, so cacheWrite1h stays 0.
+export function createPiParser(ctx, state, { names } = {}) {
+  const { sessionId = '', project = '' } = ctx ?? {};
+  const host = ctx?.host ?? 'local';
+  let session = nonEmptyString(state?.session) ?? sessionId;
+  let currentProject = nonEmptyString(state?.project) ?? project;
+  let currentCwd = typeof state?.cwd === 'string' ? state.cwd : '';
+  let model = nonEmptyString(state?.model) ?? '';
+  const table = restoreTable(state, names);
+  const parse = timestampParser();
+  const inRange = yearCheck();
+  let rowOf = null; // key -> row, built on the first keyed record
+  const add = (obj) => {
+    if (obj.type === 'session') {
+      session = nonEmptyString(obj.id) ?? session;
+      currentProject = lastSegment(obj.cwd) || currentProject;
+      currentCwd = rawCwd(obj.cwd);
+      return;
+    }
+    if (obj.type === 'model_change') {
+      model = nonEmptyString(obj.modelId) ?? model;
+      return;
+    }
+    if (obj.type !== 'message') return;
+    const message = obj.message;
+    if (message?.role !== 'assistant' || !isObject(message.usage)) return;
+    const ms = typeof obj.timestamp === 'string' ? parse(obj.timestamp) : NaN;
+    if (!inRange(ms)) return;
+    const recordModel = nonEmptyString(message.model) ?? nonEmptyString(model) ?? 'unknown';
+    const { input, output, cacheRead, cacheWrite } = piUsage(message.usage);
+    const key = piKey(obj, message, session);
+    const row = [ms, 'pi', recordModel, currentProject, session, currentCwd, host, input, output, cacheRead, cacheWrite, 0];
+    if (key === null) {
+      table.push(undefined, ...row);
+      return;
+    }
+    // The same response written again (a resumed, branched or copied session file) replaces its row.
+    if (rowOf === null) rowOf = keyRows(table);
+    const at = rowOf.get(key);
+    if (at === undefined) rowOf.set(key, table.push(key, ...row));
+    else table.replace(at, ...row);
+  };
+  return {
+    push(text) {
+      for (const line of completeLines(text)) {
+        if (!PI_MARKERS.some((marker) => line.includes(marker))) continue;
+        const obj = parseJson(line);
+        if (obj) add(obj);
+      }
+    },
+    pushObject: add,
+    table: () => table,
+    records: () => table.toRecords(),
+    state: ({ binary = false } = {}) => ({ model, session, project: currentProject, cwd: currentCwd, table: encodeTable(table, { binary }) }),
+  };
 }
 
 // `state` is a value returned by an earlier parser's state(). A restored parser keeps every
@@ -227,6 +297,27 @@ export function claudeKey(obj) {
   const id = nonEmptyString(obj?.message?.id);
   if (!id) return null;
   return `${id}:${nonEmptyString(obj.requestId) ?? ''}`;
+}
+
+// Pi's usage: input is the uncached part, output already counts thinking (reasoning), and there is
+// no 1-hour cache write to split out.
+export function piUsage(usage) {
+  return {
+    input: count(usage.input),
+    output: count(usage.output),
+    cacheRead: count(usage.cacheRead),
+    cacheWrite: count(usage.cacheWrite),
+    cacheWrite1h: 0,
+  };
+}
+
+// The provider's own response id identifies one call across copies of a session (resumed, branched or
+// replayed files), so it is the key when present. Otherwise the line id is unique within its session.
+export function piKey(obj, message, session) {
+  const response = nonEmptyString(message?.responseId);
+  if (response) return `pi:${response}`;
+  const id = nonEmptyString(obj?.id);
+  return id ? `pi:${session}:${id}` : null;
 }
 
 // cacheWrite1h is the part of cacheWrite with the 1-hour TTL; 0 when usage has no cache_creation split.

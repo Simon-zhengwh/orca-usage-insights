@@ -38,8 +38,11 @@ export async function rootSpecs({
     { path: p.join(base, '.claude'), kind: 'claude', source: 'default' },
     { path: p.join(nonEmpty(env.XDG_CONFIG_HOME) ?? p.join(base, '.config'), 'claude'), kind: 'claude', source: 'default' },
     { path: p.join(base, '.codex'), kind: 'codex', source: 'default' },
+    // Pi keeps its sessions under the agent dir (PI_CODING_AGENT_DIR), which is ~/.pi/agent by default.
+    { path: p.join(base, '.pi', 'agent'), kind: 'pi', source: 'default' },
     ...splitList(env.CLAUDE_CONFIG_DIR).map((path) => ({ path, kind: 'claude', source: 'environment' })),
     ...(nonEmpty(env.CODEX_HOME) ? [{ path: nonEmpty(env.CODEX_HOME), kind: 'codex', source: 'environment' }] : []),
+    ...(nonEmpty(env.PI_CODING_AGENT_DIR) ? [{ path: nonEmpty(env.PI_CODING_AGENT_DIR), kind: 'pi', source: 'environment' }] : []),
   ];
   const userData = nonEmpty(env.ORCA_USER_DATA_PATH) ?? (platform === 'darwin'
     ? p.join(base, 'Library', 'Application Support', 'orca')
@@ -53,7 +56,7 @@ export async function rootSpecs({
       entries = await readdir(dir, { withFileTypes: true });
     } catch (error) {
       if (error?.code !== 'ENOENT' && error?.code !== 'ENOTDIR') {
-        specs.push({ path: dir, kind, source: 'orca', message: `Cannot discover accounts (${error?.code ?? 'error'})` });
+        specs.push({ path: dir, kind, source: 'orca', message: `无法发现账号（${error?.code ?? 'error'}）` });
       }
       continue;
     }
@@ -77,6 +80,7 @@ export async function resolveRoots(options = {}) {
   return {
     claude: await existingRoots(specs.filter((s) => s.kind === 'claude').map((s) => s.path), platform, realpath),
     codex: await existingRoots(specs.filter((s) => s.kind === 'codex').map((s) => s.path), platform, realpath),
+    pi: await existingRoots(specs.filter((s) => s.kind === 'pi').map((s) => s.path), platform, realpath),
   };
 }
 

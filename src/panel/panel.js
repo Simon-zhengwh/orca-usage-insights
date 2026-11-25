@@ -29,7 +29,7 @@ function prettyDay(day) {
 async function request(name, input) {
   if (host?.plugin?.request) return host.plugin.request(name, input, { timeoutMs: 120000 })
   if (globalThis.__USAGE_PREVIEW__) return globalThis.__USAGE_PREVIEW__(name, input)
-  throw new Error('Orca host is not available.')
+  throw new Error('Orca 宿主不可用。')
 }
 
 // Breakdown splits cost, so it takes the dates but not the model or cache-token options.
@@ -62,9 +62,9 @@ async function load(kind = 'usage.report') {
     state.report = await request(kind, filterInput({ usage: true }))
     render()
     if (state.view === 'breakdown') setTimeout(() => loadBreakdown(), 0)
-    $('live').textContent = kind === 'usage.refresh' ? `Refreshed. ${compact(state.report.totals.total)} tokens in range.` : ''
+    $('live').textContent = kind === 'usage.refresh' ? `已刷新。区间内 ${compact(state.report.totals.total)} Token。` : ''
   } catch (err) {
-    showStatus(`Couldn't load usage: ${err?.message || err}`, true)
+    showStatus(`读取用量失败：${err?.message || err}`, true)
   } finally {
     state.busy = false
     $('refresh').classList.remove('spin')
@@ -96,40 +96,40 @@ function tile(label, value, sub = '', extra = '') {
 function cacheTile(t) {
   const hit = t.cacheHitRate ?? t.cacheReuseRate
   const parts = [
-    { label: 'Cache read', value: t.cacheRead || 0, color: TOKEN_COLORS.cacheRead },
-    { label: 'Cache write', value: t.cacheWrite || 0, color: TOKEN_COLORS.cacheWrite },
-    { label: 'Uncached input', value: t.input || 0, color: TOKEN_COLORS.input },
+    { label: '缓存读取', value: t.cacheRead || 0, color: TOKEN_COLORS.cacheRead },
+    { label: '缓存写入', value: t.cacheWrite || 0, color: TOKEN_COLORS.cacheWrite },
+    { label: '未缓存输入', value: t.input || 0, color: TOKEN_COLORS.input },
   ]
   const tip = esc(JSON.stringify({
-    title: 'Cache',
+    title: '缓存',
     rows: [
-      ['', 'As recorded, whether or not totals include cache tokens'],
-      ['Hit rate', pct1(hit)],
-      ['', 'read ÷ (read + write + uncached)'],
-      ['Reuse', pct1(t.cacheReuseRate)],
-      ['', 'read ÷ (read + uncached)'],
+      ['', '按记录原样，与总量是否包含缓存 Token 无关'],
+      ['命中率', pct1(hit)],
+      ['', '读取 ÷（读取 + 写入 + 未缓存）'],
+      ['复用率', pct1(t.cacheReuseRate)],
+      ['', '读取 ÷（读取 + 未缓存）'],
       ...parts.map((p) => [p.label, p.value]),
     ],
   }))
-  return `<div class="tile tile-cache" data-tip="${tip}" tabindex="0" aria-label="Cache hit rate ${pct1(hit)}, reuse ${pct1(t.cacheReuseRate)}">
-    <span class="label">Cache hit rate</span>
+  return `<div class="tile tile-cache" data-tip="${tip}" tabindex="0" aria-label="缓存命中率 ${pct1(hit)}，复用率 ${pct1(t.cacheReuseRate)}">
+    <span class="label">缓存命中率</span>
     <span class="value">${pct1(hit)}</span>
     <div class="meter">${segmentBar(parts, { width: 200, height: 6, id: 'cache-meter' })}</div>
-    <span class="sub">${pct1(t.cacheReuseRate)} reuse · ${compact(t.cacheWrite)} written</span>
+    <span class="sub">复用 ${pct1(t.cacheReuseRate)} · 写入 ${compact(t.cacheWrite)}</span>
   </div>`
 }
 
 // Non-default filters, shown as removable chips beside the Filters button and counted on it.
 function activeFilters() {
   const out = []
-  if (state.scope !== 'all') out.push({ key: 'scope', label: 'Worktrees only' })
+  if (state.scope !== 'all') out.push({ key: 'scope', label: '仅 worktree' })
   if (state.provider !== 'all') out.push({ key: 'provider', label: PROVIDER_LABELS[state.provider] || state.provider })
   if (state.host !== 'all') out.push({ key: 'host', label: hostLabel(state.host) })
   if (state.range === 'custom') out.push({ key: 'range', label: state.startDate === state.endDate ? state.startDate : `${state.startDate} – ${state.endDate}` })
   // Breakdown splits cost by what it went on, so the model and cache-token options don't apply there.
   if (state.view !== 'breakdown') {
-    if (state.models !== null) out.push({ key: 'models', label: state.models.length ? `Models: ${state.models.join(', ')}` : 'No models selected' })
-    if (!state.cache) out.push({ key: 'cache', label: 'No cache tokens' })
+    if (state.models !== null) out.push({ key: 'models', label: state.models.length ? `模型：${state.models.join(', ')}` : '未选择模型' })
+    if (!state.cache) out.push({ key: 'cache', label: '不含缓存 Token' })
   }
   return out
 }
@@ -137,10 +137,10 @@ function activeFilters() {
 function renderChips() {
   const list = activeFilters()
   const x = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
-  $('chips').innerHTML = list.map((f) => `<button class="chip" data-clear="${f.key}" aria-label="Remove filter: ${esc(f.label)}">${esc(f.label)}${x}</button>`).join('')
+  $('chips').innerHTML = list.map((f) => `<button class="chip" data-clear="${f.key}" aria-label="移除筛选：${esc(f.label)}">${esc(f.label)}${x}</button>`).join('')
   $('filters-count').hidden = !list.length
   $('filters-count').textContent = String(list.length)
-  $('filters-btn').setAttribute('aria-label', list.length ? `Filters, ${list.length} active` : 'Filters')
+  $('filters-btn').setAttribute('aria-label', list.length ? `筛选，已启用 ${list.length} 项` : '筛选')
 }
 
 // Clears one filter (or all). Every filter is part of the worker query, the cache-token option included.
@@ -195,16 +195,16 @@ function setMenu(open) {
 }
 
 function hostLabel(h) {
-  return h === 'local' ? 'This machine' : String(h).replace(/^ssh:/, '')
+  return h === 'local' ? '本机' : String(h).replace(/^ssh:/, '')
 }
 
 function ago(iso) {
-  if (!iso) return 'never'
+  if (!iso) return '从未'
   const s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000))
-  if (s < 60) return 'just now'
-  if (s < 3600) return `${Math.round(s / 60)} min ago`
-  if (s < 86400) return `${Math.round(s / 3600)} h ago`
-  return `${Math.round(s / 86400)} d ago`
+  if (s < 60) return '刚刚'
+  if (s < 3600) return `${Math.round(s / 60)} 分钟前`
+  if (s < 86400) return `${Math.round(s / 3600)} 小时前`
+  return `${Math.round(s / 86400)} 天前`
 }
 
 const SOURCE_ICONS = {
@@ -212,15 +212,15 @@ const SOURCE_ICONS = {
   folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   ssh: '<rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/>',
 }
-const STATE_WORDS = { empty: 'No transcripts', off: 'Turned off', ok: 'Up to date', warning: 'Warning', error: 'Error', loading: 'Loading…' }
+const STATE_WORDS = { empty: '暂无转录', off: '已关闭', ok: '已是最新', warning: '警告', error: '错误', loading: '加载中…' }
 
 // Labels name the transcript root; they never claim which subscription or account a history belongs to.
 function sourceLabel(source) {
   if (source.kind !== 'folder') return source.label
-  const provider = source.provider === 'claude' ? 'Claude' : PROVIDER_LABELS[source.provider] || source.provider || 'Transcripts'
+  const provider = source.provider === 'claude' ? 'Claude' : PROVIDER_LABELS[source.provider] || source.provider || '转录'
   const parts = String(source.path || source.label || '').split(/[\\/]+/).filter(Boolean)
-  const name = parts.at(-1) || 'root'
-  const type = { orca: 'Orca root', default: 'Default', environment: 'Env root', extra: 'Folder' }[source.source] || 'Folder'
+  const name = parts.at(-1) || '根目录'
+  const type = { orca: 'Orca 目录', default: '默认位置', environment: '环境变量位置', extra: '文件夹' }[source.source] || '文件夹'
   let id = name
   if (source.source === 'orca') id = (name === 'home' ? parts.at(-2) || name : name).slice(0, 8)
   else if (name === 'home' || name === 'claude' || name === 'codex') id = parts.slice(-2).join('/')
@@ -240,15 +240,15 @@ function renderSources(r) {
   if (!list.length) return
   const pill = (s) => {
     const state = STATE_WORDS[s.state] ? s.state : 'ok'
-    const empty = s.provider === 'opencode' ? 'no database' : 'no transcripts'
-    const meta = state === 'off' ? 'turned off' : state === 'empty' ? empty : state === 'loading' ? 'connecting…' : state === 'error' ? 'failed' : state === 'warning' ? (s.message || 'check settings').toLowerCase().replace(/\.$/, '') : `${compact(s.records || 0)} turns · ${ago(s.lastScanAt)}`
-    const detail = [s.path || '', s.source ? `Source: ${s.source}` : '', state === 'empty' ? empty.replace(/^no /, 'No ') : STATE_WORDS[state], s.message, s.files !== undefined ? `${s.files} files` : '', s.ms ? `scanned in ${s.ms} ms` : '', s.latestRecordAt ? `Latest recorded usage: ${new Date(s.latestRecordAt).toLocaleString()}` : ''].filter(Boolean).join(' · ')
+    const empty = s.provider === 'opencode' ? '无数据库' : '无转录'
+    const meta = state === 'off' ? '已关闭' : state === 'empty' ? empty : state === 'loading' ? '连接中…' : state === 'error' ? '失败' : state === 'warning' ? (s.message || '检查设置').toLowerCase().replace(/\.$/, '') : `${compact(s.records || 0)} 轮 · ${ago(s.lastScanAt)}`
+    const detail = [s.path || '', s.source ? `来源：${s.source}` : '', state === 'empty' ? empty : STATE_WORDS[state], s.message, s.files !== undefined ? `${s.files} 个文件` : '', s.ms ? `扫描耗时 ${s.ms} ms` : '', s.latestRecordAt ? `最近一次用量：${new Date(s.latestRecordAt).toLocaleString()}` : ''].filter(Boolean).join(' · ')
     const icon = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SOURCE_ICONS[s.kind] || SOURCE_ICONS.local}</svg>`
     const label = sourceLabel(s)
     const inner = `${icon}<span class="state" aria-hidden="true"></span><span class="name">${esc(label)}</span><span class="meta">${esc(meta)}</span>`
     if (s.kind === 'folder' && s.path) {
       const on = state !== 'off'
-      const action = on ? 'Click to leave this folder out' : 'Click to count this folder again'
+      const action = on ? '点击后不再计入这个文件夹' : '点击后重新计入这个文件夹'
       return `<button type="button" class="src ${state}" data-source-path="${esc(s.path)}" aria-pressed="${on}" title="${esc(`${detail} · ${action}`)}" aria-label="${esc(`${label}: ${detail}. ${action}`)}">${inner}</button>`
     }
     return `<span class="src ${state}" title="${esc(detail)}" aria-label="${esc(`${label}: ${detail}`)}">${inner}</span>`
@@ -257,12 +257,12 @@ function renderSources(r) {
   const prominent = list.filter((s) => !healthy.includes(s))
   const warnings = folders.length - healthy.length
   const off = folders.filter((s) => s.state === 'off').length
-  const roots = healthy.length ? `<details class="source-details"${wasOpen ? ' open' : ''}><summary>${folders.length} local ${folders.length === 1 ? 'source' : 'sources'}${off ? ` · ${off} off` : ''}${warnings ? ` · ${warnings} ${warnings === 1 ? 'warning' : 'warnings'}` : ''}</summary><div class="source-roots">${healthy.map(pill).join('')}</div></details>` : ''
-  const hint = multi ? '' : '<span class="hint">Click a folder to leave it out. Add folders or SSH hosts in Settings → Plugins → Usage Insights.</span>'
+  const roots = healthy.length ? `<details class="source-details"${wasOpen ? ' open' : ''}><summary>${folders.length} 个本地来源${off ? ` · 已关闭 ${off}` : ''}${warnings ? ` · ${warnings} 条警告` : ''}</summary><div class="source-roots">${healthy.map(pill).join('')}</div></details>` : ''
+  const hint = multi ? '' : '<span class="hint">点文件夹可以把它排除在外。在设置 → 插件 → 用量洞察 里添加文件夹或 SSH 主机。</span>'
   el.innerHTML = prominent.map(pill).join('') + roots + hint
   const problems = list.filter((s) => s.state === 'error' || s.state === 'warning')
   const notes = []
-  if (r.scopeError) notes.push(`${r.scopeError.replace(/\.?$/, '.')} Showing all usage instead.`)
+  if (r.scopeError) notes.push(`${r.scopeError.replace(/\.?$/, '。')} 改为显示全部用量。`)
   for (const s of problems) notes.push(`${sourceLabel(s)}: ${s.message || STATE_WORDS[s.state]}`)
   $('notice').hidden = !notes.length
   $('notice').textContent = notes.join('  ·  ')
@@ -275,7 +275,7 @@ function renderModels(r) {
   const shown = choices.filter((model) => model.toLowerCase().includes(query))
   const focusedModel = document.activeElement?.dataset?.model
   $('models-all').setAttribute('aria-pressed', String(state.models === null))
-  $('models').innerHTML = shown.length ? shown.map((model) => `<label class="model-option"><input type="checkbox" data-model="${esc(model)}"${state.models === null || state.models.includes(model) ? ' checked' : ''}><span>${esc(model)}</span></label>`).join('') : '<p class="muted model-empty">No matching models.</p>'
+  $('models').innerHTML = shown.length ? shown.map((model) => `<label class="model-option"><input type="checkbox" data-model="${esc(model)}"${state.models === null || state.models.includes(model) ? ' checked' : ''}><span>${esc(model)}</span></label>`).join('') : '<p class="muted model-empty">没有匹配的模型。</p>'
   if (focusedModel) [...$('models').querySelectorAll('input')].find((el) => el.dataset.model === focusedModel)?.focus()
 }
 
@@ -285,7 +285,7 @@ function applyDates() {
   try {
     normalizeQuery({ range: 'custom', startDate, endDate })
   } catch (err) {
-    $('date-error').textContent = `Pick a start date on or after ${MIN_USAGE_DATE} and an end date no later than today, with the start on or before the end (${err.message}).`
+    $('date-error').textContent = `开始日期需不早于 ${MIN_USAGE_DATE}，结束日期不晚于今天，且 开始日期不能晚于结束日期（${err.message}）。`
     $('date-error').hidden = false
     $('start-date').setAttribute('aria-invalid', 'true')
     $('end-date').setAttribute('aria-invalid', 'true')
@@ -302,7 +302,7 @@ function applyDates() {
 }
 
 function timeZoneName() {
-  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'local time' } catch { return 'local time' }
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || '本地时区' } catch { return '本地时区' }
 }
 
 // The worker keeps the turned-off list in its settings; the report is then reloaded without the folder.
@@ -313,11 +313,11 @@ async function toggleSource(button) {
   button.disabled = true
   try {
     await request('sources.toggle', { path, enabled })
-    $('live').textContent = enabled ? 'Folder counted again.' : 'Folder left out.'
+    $('live').textContent = enabled ? '该文件夹已重新计入。' : '该文件夹已排除。'
     await load()
     if (state.view === 'breakdown') loadBreakdown()
   } catch (err) {
-    showStatus(`Couldn't change the folder: ${err?.message || err}`, true)
+    showStatus(`切换文件夹失败：${err?.message || err}`, true)
     button.disabled = false
   }
 }
@@ -341,14 +341,14 @@ export function render() {
   const bh = hero.clientHeight || 112
   // One art pixel ≈ 3.3 screen px, so the scene fills any panel width without cropping.
   $('banner').innerHTML = pixelBanner(r, { h: 34, w: Math.max(80, Math.min(400, Math.round((34 * bw) / bh))) })
-  $('updated').textContent = `Updated ${new Date(r.generatedAt).toLocaleString()}`
+  $('updated').textContent = `更新于 ${new Date(r.generatedAt).toLocaleString()}`
   $('hero-total').textContent = compact(shownTotal)
-  $('hero-total').title = `${shownTotal.toLocaleString('en-US')} tokens`
+  $('hero-total').title = `${shownTotal.toLocaleString('en-US')} Token`
   const zone = timeZoneName()
-  const span = r.startDate && r.endDate ? (r.startDate === r.endDate ? r.startDate : `${r.startDate} – ${r.endDate}`) : 'All history'
-  $('selection-summary').textContent = `${span} · ${zone} · ${includeCache ? 'Includes cache tokens' : 'Excludes cache tokens'} · all accounts combined`
-  $('date-hint').textContent = `Inclusive local dates (${zone}). Use the same date for one day.`
-  $('hero-sub').textContent = `tokens · ${money(t.costUsd)}${t.hasUnpriced ? '+' : ''} est.`
+  const span = r.startDate && r.endDate ? (r.startDate === r.endDate ? r.startDate : `${r.startDate} – ${r.endDate}`) : '全部历史'
+  $('selection-summary').textContent = `${span} · ${zone} · ${includeCache ? '包含缓存 Token' : '不含缓存 Token'} · 已合并全部账号`
+  $('date-hint').textContent = `本地时区日期，含首尾两天（${zone}）。看单独一天就填相同日期。`
+  $('hero-sub').textContent = `Token · 约 ${money(t.costUsd)}${t.hasUnpriced ? '+' : ''}`
 
   // Controls reflect state.
   for (const b of $('ranges').querySelectorAll('button')) b.setAttribute('aria-checked', String(b.dataset.range === state.range))
@@ -362,10 +362,10 @@ export function render() {
   const opt = (attr, value, label, checked) => `<button role="radio" data-${attr}="${esc(value)}" aria-checked="${checked}"><span class="dot" aria-hidden="true"></span><span><b>${esc(label)}</b></span></button>`
   const showHosts = hosts.length > 1 || state.host !== 'all'
   $('sec-hosts').hidden = !showHosts
-  $('hosts').innerHTML = showHosts ? ['all', ...hosts].map((h) => opt('host', h, h === 'all' ? 'All machines' : hostLabel(h), h === state.host)).join('') : ''
+  $('hosts').innerHTML = showHosts ? ['all', ...hosts].map((h) => opt('host', h, h === 'all' ? '全部机器' : hostLabel(h), h === state.host)).join('') : ''
   const showProviders = providers.length > 1 || state.provider !== 'all'
   $('sec-providers').hidden = !showProviders
-  $('providers').innerHTML = showProviders ? ['all', ...providers].map((p) => opt('provider', p, p === 'all' ? 'All providers' : PROVIDER_LABELS[p] || p, p === state.provider)).join('') : ''
+  $('providers').innerHTML = showProviders ? ['all', ...providers].map((p) => opt('provider', p, p === 'all' ? '全部提供方' : PROVIDER_LABELS[p] || p, p === state.provider)).join('') : ''
   for (const b of $('scope').querySelectorAll('button')) b.setAttribute('aria-checked', String(b.dataset.scope === state.scope))
   $('cache').checked = state.cache
   renderModels(r)
@@ -375,28 +375,28 @@ export function render() {
   const empty = t.turns === 0
   $('status').hidden = !empty || state.view === 'breakdown'
   if (empty) {
-    $('status').textContent = 'No recorded usage matches these dates and filters. Try another range, choose All models, or reset the filters.'
+    $('status').textContent = '当所选日期与筛选下没有用量记录。换个时间范围、选“全部模型”，或重置筛选。'
     $('status').classList.remove('error')
   }
   $('content').hidden = state.view === 'breakdown'
 
   const daySpark = sparkline(r.daily.map((d) => keys.reduce((s, k) => s + (d[k] || 0), 0)))
   $('tiles').innerHTML = [
-    tile('Tokens', compact(shownTotal), `${compact(t.input)} in · ${compact(t.output)} out`, `<div class="spark-wrap">${daySpark}</div>`),
-    tile('Est. cost', money(t.costUsd) + (t.hasUnpriced ? '+' : ''), t.hasUnpriced ? 'some models unpriced' : 'at API list prices'),
-    tile('Today', compact(r.today.total), r.today.costUsd == null ? '—' : money(r.today.costUsd)),
+    tile('Token', compact(shownTotal), `输入 ${compact(t.input)} · 输出 ${compact(t.output)}`, `<div class="spark-wrap">${daySpark}</div>`),
+    tile('预估成本', money(t.costUsd) + (t.hasUnpriced ? '+' : ''), t.hasUnpriced ? '部分模型无价格' : '按 API 标价'),
+    tile('今天', compact(r.today.total), r.today.costUsd == null ? '—' : money(r.today.costUsd)),
     cacheTile(t),
-    tile('Sessions / turns', `${t.sessions.toLocaleString()} / ${t.turns.toLocaleString()}`),
-    tile('Streak', `${r.streak.current} day${r.streak.current === 1 ? '' : 's'}`, `longest ${r.streak.longest}`),
+    tile('会话 / 轮次', `${t.sessions.toLocaleString()} / ${t.turns.toLocaleString()}`),
+    tile('连续使用', `${r.streak.current} 天`, `最长 ${r.streak.longest} 天`),
   ].join('')
 
   const isCost = state.metric === 'cost'
   if (isCost) {
-    $('daily-sub').textContent = 'Estimated cost by day, at API list prices.'
-    $('daily').innerHTML = stackedBars(r.daily, { keys: ['costUsd'], colors: { costUsd: 'var(--s1)' }, labels: { costUsd: 'Cost' }, fmt: money, width: widthOf('daily'), height: 190 })
-    $('daily-legend').innerHTML = legendItem('var(--s1)', 'Cost', money(t.costUsd))
+    $('daily-sub').textContent = '每日预估成本，按 API 标价。'
+    $('daily').innerHTML = stackedBars(r.daily, { keys: ['costUsd'], colors: { costUsd: 'var(--s1)' }, labels: { costUsd: '成本' }, fmt: money, width: widthOf('daily'), height: 190 })
+    $('daily-legend').innerHTML = legendItem('var(--s1)', '成本', money(t.costUsd))
   } else {
-    $('daily-sub').textContent = includeCache ? 'Input, output, cache read and cache write by day.' : 'Input and output by day (cache tokens left out of every total).'
+    $('daily-sub').textContent = includeCache ? '每日的输入、输出、缓存读取与缓存写入。' : '每日的输入与输出（所有总量都不含缓存 Token）。'
     $('daily').innerHTML = stackedBars(r.daily, { keys, width: widthOf('daily'), height: 190 })
     $('daily-legend').innerHTML = keys.map((k) => legendItem(TOKEN_COLORS[k], TOKEN_LABELS[k], compact(t[k]))).join('')
   }
@@ -406,7 +406,7 @@ export function render() {
   syncRadioTabs()
   positionMenu()
 
-  $('peak').textContent = r.peakDay ? `Best: ${prettyDay(r.peakDay.day)} · ${compact(r.peakDay.total)}` : ''
+  $('peak').textContent = r.peakDay ? `最高：${prettyDay(r.peakDay.day)} · ${compact(r.peakDay.total)}` : ''
   $('calendar').innerHTML = calendarHeatmap(r.calendar)
   $('punch').innerHTML = punchCard(r.punchCard)
 
@@ -423,30 +423,30 @@ function renderOverview(r, keys, widthOf) {
   const isCost = state.metric === 'cost'
   const fmt = isCost ? money : compact
   $('ov-total').textContent = isCost ? money(t.costUsd) + (t.hasUnpriced ? '+' : '') : compact(keys.reduce((a, k) => a + (t[k] || 0), 0))
-  $('ov-sessions').textContent = `${t.sessions.toLocaleString()} sessions · ${t.turns.toLocaleString()} turns`
+  $('ov-sessions').textContent = `${t.sessions.toLocaleString()} 个会话 · ${t.turns.toLocaleString()} 轮`
   $('ov-providers').innerHTML = (r.byProvider || []).map((p, i) => {
-    const sessions = p.sessions !== undefined ? `<small>${p.sessions.toLocaleString()} sessions</small>` : ''
-    const amount = isCost ? (p.costUsd == null ? 'unpriced' : money(p.costUsd)) : compact(p.total)
-    const other = isCost ? `${compact(p.total)} tokens` : p.costUsd == null ? 'cost unpriced' : money(p.costUsd)
-    return `<li><span class="sw" style="background:${providerColor(p.provider, i)}"></span><span class="name">${esc(PROVIDER_LABELS[p.provider] || p.provider)}${sessions}</span><span class="amt">${esc(amount)}</span><span class="meta">${pct(p.share)} of tokens · ${esc(other)}</span></li>`
+    const sessions = p.sessions !== undefined ? `<small>${p.sessions.toLocaleString()} 个会话</small>` : ''
+    const amount = isCost ? (p.costUsd == null ? '无价格' : money(p.costUsd)) : compact(p.total)
+    const other = isCost ? `${compact(p.total)} Token` : p.costUsd == null ? '成本无价格' : money(p.costUsd)
+    return `<li><span class="sw" style="background:${providerColor(p.provider, i)}"></span><span class="name">${esc(PROVIDER_LABELS[p.provider] || p.provider)}${sessions}</span><span class="amt">${esc(amount)}</span><span class="meta">占 Token ${pct(p.share)} · ${esc(other)}</span></li>`
   }).join('')
   const byHost = r.byHost || []
   $('ov-hosts').hidden = byHost.length < 2
   $('ov-hosts').innerHTML = byHost.length < 2 ? '' : byHost.map((h) => {
-    const amount = isCost ? (h.costUsd == null ? 'unpriced' : money(h.costUsd)) : compact(h.total)
-    return `<li><span class="sw" style="background:var(--muted-fg)"></span><span class="name">${esc(hostLabel(h.host))}<small>${(h.sessions ?? 0).toLocaleString()} sessions</small></span><span class="amt">${esc(amount)}</span><span class="meta">${pct(h.share)} of tokens</span></li>`
+    const amount = isCost ? (h.costUsd == null ? '无价格' : money(h.costUsd)) : compact(h.total)
+    return `<li><span class="sw" style="background:var(--muted-fg)"></span><span class="name">${esc(hostLabel(h.host))}<small>${(h.sessions ?? 0).toLocaleString()} 个会话</small></span><span class="amt">${esc(amount)}</span><span class="meta">占 Token ${pct(h.share)}</span></li>`
   }).join('')
-  $('trend-title').textContent = isCost ? 'Daily cost by provider' : 'Daily tokens by provider'
+  $('trend-title').textContent = isCost ? '每日成本（按提供方）' : '每日 Token（按提供方）'
   const all = r.seriesByProvider || [{ provider: r.byProvider?.[0]?.provider || 'claude', daily: r.daily }]
   const live = all.filter((s) => s.daily.some((d) => d.total > 0))
   const series = live.length ? live : all
   $('trend').innerHTML = areaTrend(series, { metric: isCost ? 'costUsd' : 'total', fmt, axisFmt: isCost ? (v) => '$' + compact(v) : compact, width: widthOf('trend'), height: 210 })
   const cells = [
-    ['Processed tokens', compact(t.total)],
-    ...(keys.includes('cacheRead') ? [['Cache read', compact(t.cacheRead)], ['Cache write', compact(t.cacheWrite)]] : []),
-    ['Uncached input', compact(t.input)],
-    ['Output', compact(t.output)],
-    ['Cache savings', t.cacheSavingsUsd === undefined ? '—' : money(t.cacheSavingsUsd)],
+    ['处理 Token', compact(t.total)],
+    ...(keys.includes('cacheRead') ? [['缓存读取', compact(t.cacheRead)], ['缓存写入', compact(t.cacheWrite)]] : []),
+    ['未缓存输入', compact(t.input)],
+    ['输出', compact(t.output)],
+    ['缓存节省', t.cacheSavingsUsd === undefined ? '—' : money(t.cacheSavingsUsd)],
   ]
   $('totals').innerHTML = cells.map(([k, v]) => `<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('')
   const segs = keys.map((k) => ({ label: TOKEN_LABELS[k], value: t[k] || 0, color: TOKEN_COLORS[k] }))
@@ -477,16 +477,16 @@ function renderBreakdown(r) {
   }
   $('rank-sort').value = state.sort
   $('rank-note').textContent = detailed
-    ? `Exact token counts as recorded. Total ${includeCache ? 'includes' : 'excludes'} cache tokens.`
-    : `Totals ${includeCache ? 'include' : 'exclude'} cache tokens. Hover a token count for its exact value.`
+    ? `按记录原样的精确 Token 数。合计${includeCache ? '包含' : '不包含'}缓存 Token。`
+    : `合计${includeCache ? '包含' : '不包含'}缓存 Token。鼠标悬停 Token 数可看精确值。`
   $('breakdown').classList.toggle('detail', detailed)
   if (detailed) {
     const rows = sortRows((r.byDayModel || []).map((row) => ({ ...row, tokens: row.total })))
-    const columns = ['Date', 'Provider', 'Model', 'Input', 'Output', 'Cache read', 'Cache write', 'Total', 'Cost']
+    const columns = ['日期', '提供方', '模型', '输入', '输出', '缓存读取', '缓存写入', '合计', '成本']
     const head = `<thead><tr>${columns.map((label) => `<th scope="col">${label}</th>`).join('')}</tr></thead>`
     const body = rows.length
       ? rows.map((row) => `<tr><td>${esc(row.day)}</td><td>${esc(PROVIDER_LABELS[row.provider] || row.provider)}</td><td>${esc(row.model)}</td>${['input', 'output', 'cacheRead', 'cacheWrite', 'total'].map((key) => `<td>${esc(exact(row[key]))}</td>`).join('')}<td${row.costUsd == null ? ' class="muted"' : ''}>${row.costUsd == null ? '—' : money(row.costUsd)}</td></tr>`).join('')
-      : `<tr><td colspan="${columns.length}" class="muted">No recorded usage matches these dates and filters.</td></tr>`
+      : `<tr><td colspan="${columns.length}" class="muted">当所选日期与筛选下没有用量记录。</td></tr>`
     $('breakdown').innerHTML = head + `<tbody>${body}</tbody>`
     return
   }
@@ -502,15 +502,15 @@ function renderBreakdown(r) {
   sortRows(rows)
   const key = (x) => (isCost ? x.cost ?? 0 : x.tokens)
   const top = Math.max(0, ...rows.map(key))
-  const head = `<thead><tr><th scope="col">#</th><th scope="col">${byModel ? 'Model' : 'Day'}</th><th scope="col">Cost</th><th scope="col">Share</th><th scope="col">Tokens</th></tr></thead>`
+  const head = `<thead><tr><th scope="col">#</th><th scope="col">${byModel ? '模型' : '日期'}</th><th scope="col">成本</th><th scope="col">占比</th><th scope="col">Token</th></tr></thead>`
   const body = rows.length
     ? rows.map((x, i) => {
         const color = byModel ? colorOf(x.provider) : 'var(--s1)'
         const width = top > 0 ? Math.max(2, (key(x) / top) * 100) : 0
         const dot = byModel && x.provider ? `<span class="sw" style="background:${color}"></span>` : ''
-        return `<tr><td class="rank">${i + 1}</td><td class="name"><span class="nm">${dot}${esc(x.name)}</span><span class="share-line" style="width:${width.toFixed(1)}%;background:${color}"></span></td><td${x.cost == null ? ' class="muted"' : ''}>${x.cost == null ? '—' : money(x.cost)}</td><td class="muted">${x.share < 0.001 && x.share > 0 ? '&lt;0.1%' : (x.share * 100).toFixed(1) + '%'}</td><td title="${esc(exact(x.tokens))} tokens">${esc(compact(x.tokens))}</td></tr>`
+        return `<tr><td class="rank">${i + 1}</td><td class="name"><span class="nm">${dot}${esc(x.name)}</span><span class="share-line" style="width:${width.toFixed(1)}%;background:${color}"></span></td><td${x.cost == null ? ' class="muted"' : ''}>${x.cost == null ? '—' : money(x.cost)}</td><td class="muted">${x.share < 0.001 && x.share > 0 ? '&lt;0.1%' : (x.share * 100).toFixed(1) + '%'}</td><td title="${esc(exact(x.tokens))} Token">${esc(compact(x.tokens))}</td></tr>`
       }).join('')
-    : `<tr><td colspan="5" class="muted" style="text-align:center">No recorded usage matches these dates and filters.</td></tr>`
+    : `<tr><td colspan="5" class="muted" style="text-align:center">当所选日期与筛选下没有用量记录。</td></tr>`
   $('breakdown').innerHTML = head + `<tbody>${body}</tbody>`
 }
 
@@ -535,7 +535,7 @@ function renderNote() {
   try { seen = globalThis.localStorage?.getItem(NOTE_KEY) === '1' } catch {}
   const el = $('note')
   if (seen || !el.hidden) return
-  el.innerHTML = 'Prices now come from a per-model catalog with tiers and 1-hour cache writes, so some costs differ from earlier versions. <button class="link-btn" id="note-ok">Got it</button>'
+  el.innerHTML = '价格现在按模型目录计算，含分层计价与 1 小时缓存写入，所以部分成本会与之前的版本不同。 <button class="link-btn" id="note-ok">知道了</button>'
   el.hidden = false
 }
 
@@ -544,7 +544,7 @@ async function loadBreakdown() {
   state.bdBusy = true
   $('bd-stale').hidden = true
   if (!state.bd) {
-    $('bd-status').textContent = 'Splitting your usage by file, command and tool… The first run reads the transcripts in this range and takes a few seconds.'
+    $('bd-status').textContent = '正在按文件、命令与工具拆分用量… 首次运行需要读取这个范围内的转录，会花几秒。'
     $('bd-status').classList.remove('error')
     $('bd-status').hidden = false
   }
@@ -552,7 +552,7 @@ async function loadBreakdown() {
     const view = await request('usage.breakdown', { ...filterInput(), ...(state.bdPath.length ? { path: state.bdPath } : {}) })
     if (view?.loading) {
       const { done = 0, total = 0 } = view.loading
-      $('bd-status').textContent = `Reading transcripts… ${done.toLocaleString()} of ${total.toLocaleString()} files. This view updates when it's done.`
+      $('bd-status').textContent = `正在读取转录… 已完成 ${done.toLocaleString()} / ${total.toLocaleString()} 个文件。完成后此视图会自动更新。`
       $('bd-status').classList.remove('error')
       $('bd-status').hidden = false
       state.bdLoading = true
@@ -563,7 +563,7 @@ async function loadBreakdown() {
     state.bdPath = view.path || []
     renderBreakdownView()
   } catch (err) {
-    $('bd-status').textContent = `Couldn't build the breakdown: ${err?.message || err}`
+    $('bd-status').textContent = `生成拆解失败：${err?.message || err}`
     $('bd-status').classList.add('error')
     $('bd-status').hidden = false
   } finally {
@@ -651,16 +651,16 @@ async function priceAction(action) {
   if (action === 'sync') return openSync()
   try {
     await request(action === 'undo' ? 'prices.undo' : 'prices.reset')
-    $('live').textContent = action === 'undo' ? 'Previous prices restored.' : 'Bundled prices restored.'
+    $('live').textContent = action === 'undo' ? '已恢复之前的价格。' : '已恢复内置价格。'
   } catch (err) {
-    showStatus(`Couldn't change prices: ${err?.message || err}`, true)
+    showStatus(`修改价格失败：${err?.message || err}`, true)
   }
   await loadPrices()
 }
 
 async function openSync() {
   const dlg = $('sync-dlg')
-  $('sync-body').innerHTML = '<p class="muted">Fetching LiteLLM and models.dev…</p>'
+  $('sync-body').innerHTML = '<p class="muted">正在拉取 LiteLLM 与 models.dev…</p>'
   $('sync-apply').disabled = true
   state.sync = null
   if (!dlg.open) dlg.showModal?.()
@@ -669,7 +669,7 @@ async function openSync() {
     $('sync-body').innerHTML = syncBody(state.sync)
     $('sync-apply').disabled = !changedSyncRows(state.sync.rows).some((r) => r.status !== 'overridden')
   } catch (err) {
-    $('sync-body').innerHTML = `<p class="status error">Couldn't fetch prices: ${esc(err?.message || err)}</p>`
+    $('sync-body').innerHTML = `<p class="status error">拉取价格失败：${esc(err?.message || err)}</p>`
   }
 }
 
@@ -680,26 +680,26 @@ async function applySync() {
   try {
     await request('prices.apply', { diffId: state.sync.diffId, keys })
     $('sync-dlg').close?.()
-    $('live').textContent = `${keys.length} price${keys.length === 1 ? '' : 's'} applied.`
+    $('live').textContent = `已应用 ${keys.length} 条价格。`
     await loadPrices()
   } catch (err) {
     const stale = err?.code === 'stale_diff' || /stale_diff|out of date/.test(String(err?.message))
-    $('sync-body').insertAdjacentHTML('afterbegin', `<p class="status error">${esc(stale ? 'Prices changed since this sync. Sync again.' : `Couldn't apply: ${err?.message || err}`)}</p>`)
+    $('sync-body').insertAdjacentHTML('afterbegin', `<p class="status error">${esc(stale ? '价格在此次同步后已变动，请重新同步。' : `应用失败：${err?.message || err}`)}</p>`)
     $('sync-apply').disabled = false
   }
 }
 
 async function openExplain(findingId) {
   const dlg = $('explain-dlg')
-  $('explain-text').value = 'Building the prompt…'
+  $('explain-text').value = '正在生成提示词…'
   $('explain-size').textContent = ''
   if (!dlg.open) dlg.showModal?.()
   try {
     const res = await request('usage.explain', { ...filterInput(), findingId })
     $('explain-text').value = res.prompt
-    $('explain-size').textContent = `≈ ${compact(res.estTokens)} tokens for your agent to read it`
+    $('explain-size').textContent = `agent 读取约需 ${compact(res.estTokens)} Token`
   } catch (err) {
-    $('explain-text').value = `Couldn't build the prompt: ${err?.message || err}`
+    $('explain-text').value = `生成提示词失败：${err?.message || err}`
   }
 }
 
@@ -715,8 +715,8 @@ async function copyExplain() {
   } catch {
     try { ok = document.execCommand('copy') } catch {}
   }
-  $('explain-copy').textContent = ok ? 'Copied' : 'Press Ctrl+C to copy'
-  setTimeout(() => { $('explain-copy').textContent = 'Copy prompt' }, 2000)
+  $('explain-copy').textContent = ok ? '已复制' : '按 Ctrl+C 复制'
+  setTimeout(() => { $('explain-copy').textContent = '复制提示词' }, 2000)
 }
 
 function bindBreakdown() {
@@ -781,7 +781,7 @@ function bindTooltip() {
     let data
     try { data = JSON.parse(el.getAttribute('data-tip')) } catch { return }
     const fmt = (v) => (typeof v === 'number' ? `${compact(v)}${v >= 1000 ? ` (${v.toLocaleString()})` : ''}` : v)
-    tip.innerHTML = `<b>${esc(data.title)}</b>` + data.rows.map(([k, v]) => `<div class="row"><span>${esc(k)}</span><span>${esc(fmt(v))}</span></div>`).join('') + (data.total !== undefined ? `<div class="row"><span>Total</span><span>${esc(fmt(data.total))}</span></div>` : '')
+    tip.innerHTML = `<b>${esc(data.title)}</b>` + data.rows.map(([k, v]) => `<div class="row"><span>${esc(k)}</span><span>${esc(fmt(v))}</span></div>`).join('') + (data.total !== undefined ? `<div class="row"><span>合计</span><span>${esc(fmt(data.total))}</span></div>` : '')
     tip.hidden = false
     const pad = 12
     const edge = 4

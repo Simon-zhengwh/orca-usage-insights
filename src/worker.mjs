@@ -113,7 +113,7 @@ export function startWorker(orca, scanner, {
   let pending = null;
   const inFlight = new Set();
 
-  let lastExtra = { claude: [], codex: [], disabled: [] };
+  let lastExtra = { claude: [], codex: [], pi: [], disabled: [] };
   let digestScanner = null;
   let digestJob = null;
   let lastDigests = null;
@@ -212,7 +212,7 @@ export function startWorker(orca, scanner, {
   // null means still running: the caller answers { loading } and usage.changed follows.
   function digestsWithin(waitMs, since = 0, sessions = null) {
     digestScanner ??= makeDigestScanner();
-    const folders = JSON.stringify([lastExtra.claude ?? [], lastExtra.codex ?? [], lastExtra.disabled ?? []]);
+    const folders = JSON.stringify([lastExtra.claude ?? [], lastExtra.codex ?? [], lastExtra.pi ?? [], lastExtra.disabled ?? []]);
     if (!digestJob || digestJob.since > since || digestJob.folders !== folders) {
       const job = digestScanner
         .scan({ extra: lastExtra, since, sessions })
@@ -358,8 +358,9 @@ export function startWorker(orca, scanner, {
       settingsFailing = true;
     }
     return {
-      claude: folderList(settings?.extraClaudeFolders, 'Extra Claude Code folder'),
-      codex: folderList(settings?.extraCodexFolders, 'Extra Codex folder'),
+      claude: folderList(settings?.extraClaudeFolders, '额外 Claude Code 文件夹'),
+      codex: folderList(settings?.extraCodexFolders, '额外 Codex 文件夹'),
+      pi: folderList(settings?.extraPiFolders, '额外 Pi 文件夹'),
       hosts: sshEntries(settingLines(settings?.sshHosts)),
       disabled: [...new Set(settingLines(settings?.disabledFolders).map((line) => expandHome(line, { platform, home })))],
     };
@@ -385,7 +386,7 @@ export function startWorker(orca, scanner, {
     for (const line of settingLines(lines)) {
       const folder = expandHome(line, { platform, home });
       if (!paths.isAbsolute(folder)) {
-        warnOnce(`${label} "${line}" is not an absolute path, so it is skipped`);
+        warnOnce(`${label} “${line}” 不是绝对路径，已跳过`);
         continue;
       }
       out.push(folder);
@@ -403,7 +404,7 @@ export function startWorker(orca, scanner, {
       const host = m ? m[2] : line;
       const name = m ? m[1].trim() : line;
       if (names.has(name)) {
-        warnOnce(`SSH name "${name}" is used twice; only the first line is kept`);
+        warnOnce(`SSH 名称 “${name}” 重复，只保留第一行`);
         continue;
       }
       names.add(name);
@@ -436,7 +437,7 @@ export function startWorker(orca, scanner, {
         const cacheFile = sshCacheDir ? join(sshCacheDir, `ssh-v3-${host.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 40)}-${hash}.json`) : undefined;
         sources.set(key, { name, source: makeSshSource({ host, name, cacheFile }), records: [], files: [], run: null });
       } catch (error) {
-        warnOnce(`SSH host "${name}" was skipped: ${shortMessage(error)}`);
+        warnOnce(`SSH 主机 “${name}” 已跳过：${shortMessage(error)}`);
       }
     }
   }
@@ -489,7 +490,7 @@ export function startWorker(orca, scanner, {
   // status bar poll (detach) never waits for SSH.
   async function gather({ force, detach, forceLocal = force }) {
     const config = await readConfig();
-    lastExtra = { claude: config.claude, codex: config.codex, disabled: config.disabled };
+    lastExtra = { claude: config.claude, codex: config.codex, pi: config.pi, disabled: config.disabled };
     scanner.setExtraRoots(lastExtra);
     reconcile(config.hosts);
     const hosts = [...sources];
@@ -519,7 +520,7 @@ export function startWorker(orca, scanner, {
     const local = {
       id: 'local',
       kind: 'local',
-      label: 'This machine',
+      label: '本机',
       state: 'ok',
       files: result.files,
       records: result.records.length,
@@ -527,12 +528,12 @@ export function startWorker(orca, scanner, {
     };
     const notes = [];
     if (result.errors > 0) {
-      notes.push(`${result.errors === 1 ? '1 transcript file' : `${result.errors} transcript files`} could not be read`);
+      notes.push(`${result.errors === 1 ? '1 个转录文件' : `${result.errors} 个转录文件`} 读取失败`);
     }
     const zstd = result.skipped?.zstd ?? 0;
     const tooLarge = result.skipped?.tooLarge ?? 0;
-    if (zstd > 0) notes.push(`${zstd} compressed Codex ${zstd === 1 ? 'file' : 'files'} skipped: zstd unavailable`);
-    if (tooLarge > 0) notes.push(`${tooLarge} compressed Codex ${tooLarge === 1 ? 'file' : 'files'} skipped: too large`);
+    if (zstd > 0) notes.push(`${zstd} 个压缩的 Codex 文件已跳过：zstd 不可用`);
+    if (tooLarge > 0) notes.push(`${tooLarge} 个压缩的 Codex 文件已跳过：太大`);
     if (notes.length > 0) Object.assign(local, { state: 'warning', message: notes.join('; ') });
     // Every transcript root: the defaults, environment and Orca account homes, and the extra folders.
     const folders = (result.folders ?? []).map((folder) => ({
