@@ -138,7 +138,10 @@ export async function listTranscripts({ fs, platform = process.platform, roots, 
       const walked = await walkTop(dir);
       if (!walked) continue;
       entry.dirs.push(walked.top);
-      for (const path of walked.found) paths.push(path);
+      // A provider whose files are nested (Antigravity) names the ones it reads and where its
+      // session id sits; every other provider reads all .jsonl below its roots.
+      const found = provider.isTranscript ? walked.found.filter((path) => provider.isTranscript(path)) : walked.found;
+      for (const path of found) paths.push(path);
     }
     await statAll(paths);
     for (const path of paths) {
@@ -149,10 +152,13 @@ export async function listTranscripts({ fs, platform = process.platform, roots, 
         canonical = path;
         claimed.set(id, path);
         if (fileStat) stats.set(path, fileStat);
+        const ctx = provider.contextOf
+          ? provider.contextOf(path)
+          : { sessionId: p.basename(path).replace(TRANSCRIPT, ''), project: p.basename(p.dirname(path)) };
         out.push({
           path,
           kind,
-          ctx: { sessionId: p.basename(path).replace(TRANSCRIPT, ''), project: p.basename(p.dirname(path)) },
+          ctx,
           compressed: COMPRESSED.test(path),
           fileId: inodeOf(fileStat),
         });

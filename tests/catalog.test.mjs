@@ -168,6 +168,20 @@ test('the catalog re-exports the band and id helpers unchanged', () => {
   assert.equal(catalog.normalizeModelId, sources.normalizeModelId);
 });
 
+test('a model id with a thinking level or a dotted separator resolves to the catalog entry', () => {
+  const built = buildCatalog(BUNDLED);
+  assert.equal(built.problems.length, 0);
+  const entry = resolveModel('gemini-4-neon-high', built);
+  assert.equal(entry.id, 'gemini-4-neon');
+  assert.deepEqual([entry.input, entry.output, entry.cacheRead], [3, 15, 0.15]);
+  // The dotted id is what models.dev lists; the dashed form is what a session writes.
+  assert.equal(resolveModel('gemini-3.8-flash-medium', built).id, 'gemini-3.8-flash');
+  assert.equal(resolveModel('claude-opus-4-6-thinking', built).id, 'claude-opus-4-6');
+  // An id the index folds for several entries answers with the first one, never lookup order.
+  const twice = buildCatalog(BUNDLED);
+  assert.equal(resolveModel('deepseek-v4-1-flash', twice), resolveModel('deepseek-v4-1-flash', built));
+});
+
 test('a maker model bills cache writes at its one default rate', () => {
   const built = buildCatalog(BUNDLED);
   assert.ok(Math.abs(requestCost({ model: 'kimi-k3.1-pro', input: 0, output: 0, cacheRead: 0, cacheWrite: 1_000_000 }, built) - 2) < 1e-9);

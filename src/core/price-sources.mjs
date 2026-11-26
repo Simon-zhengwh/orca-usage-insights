@@ -6,12 +6,17 @@ import { PROMPT_BANDS } from './bands.mjs';
 const PROVIDERS = ['anthropic', 'openai', 'opencode', 'opencode-go'];
 // The makers of the models people run through their own gateways (DeepSeek, Z.ai, Moonshot, Volcengine).
 // Their ids carry no vendor prefix and are bundled from models.dev only, so one id keeps one price.
-const MAKERS = ['deepseek', 'zai', 'moonshotai', 'volcengine'];
+const MAKERS = ['deepseek', 'google', 'moonshotai', 'volcengine', 'zai'];
 // OpenCode prices depend on the channel (Console or Go) and share model ids, so their catalog ids are
 // qualified. Only these providers use the "no rate listed means no charge" rule below.
 const CHANNELS = new Set(['opencode', 'opencode-go']);
 const MAKER_SET = new Set(MAKERS);
-const PREFIX = /^(anthropic\/|openai\/|us\.anthropic\.|eu\.anthropic\.|anthropic\.)/;
+const PREFIX = /^(anthropic\/|openai\/|us\.anthropic\.|eu\.anthropic\.|anthropic\.|google\/)/;
+// A thinking level is not part of a model: Antigravity writes `gemini-4-neon-high` for the model a
+// price list calls `gemini-4-neon`. Stripping it keeps an id with a level on it priced. A dot and a
+// dash separate the same things (`claude-opus-4.6` / `claude-opus-4-6`), so a dotted id folds onto
+// the dashed one; the catalog has no pair that differs only by that dot.
+const LEVEL = /-(?:xhigh|high|medium|low|thinking)$/;
 const SUFFIX = /(\[1m\]|-v\d+:\d+|@\d{8}|-\d{8})$/;
 const DATED = /^(.*)-\d{8}$/;
 const TIER = /^(.*)_above_(\d+)k_tokens$/;
@@ -32,9 +37,9 @@ const LITELLM_SLOTS = {
 };
 
 export function normalizeModelId(id) {
-  let s = String(id).toLowerCase().replace(PREFIX, '');
+  let s = String(id).toLowerCase().replace(PREFIX, '').replace(/\./g, '-');
   let stripped;
-  while ((stripped = s.replace(SUFFIX, '')) !== s) s = stripped;
+  while ((stripped = s.replace(SUFFIX, '').replace(LEVEL, '')) !== s) s = stripped;
   return s;
 }
 

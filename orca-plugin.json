@@ -2,9 +2,9 @@
   "manifestVersion": 2,
   "id": "usage-insights",
   "name": "用量洞察",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "execution": "trusted-worker",
-  "description": "用图表展示你的 Claude Code、Codex、Pi 与 OpenCode 用量与预估 API 成本，可按天、项目、模型和机器查看；还有一个“明细”视图，可逐笔查看请求并看到输出吞吐（Token/秒）；一个“拆解”视图，把花费拆到文件或命令，并生成可交给 agent 的提示词去分析那些昂贵的模式。数据来自本机转录，以及你添加的 SSH 主机。",
+  "description": "用图表展示你的 Claude Code、Codex、Pi、Antigravity 与 OpenCode 用量与预估 API 成本，可按天、项目、模型和机器查看；还有一个“明细”视图，可逐笔查看请求并看到输出吞吐（Token/秒）；一个“拆解”视图，把花费拆到文件或命令，并生成可交给 agent 的提示词去分析那些昂贵的模式。数据来自本机转录，以及你添加的 SSH 主机。",
   "author": {
     "name": "Etherll",
     "url": "https://github.com/Etherll"

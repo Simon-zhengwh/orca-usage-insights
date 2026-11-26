@@ -14,6 +14,10 @@ export const CODEX_MARKERS = ['token_count', 'turn_context', 'session_meta'];
 // cwd, project and model a later message may leave out, so all three are marked.
 const PI_USAGE_MARKER = '"usage"';
 export const PI_MARKERS = [PI_USAGE_MARKER, '"type":"session"', '"model_change"'];
+// Antigravity (agy) writes one line per step of a session. A finished model response carries the
+// counters, and a user turn may name the model the session switched to, so both are marked.
+const AGY_USAGE_MARKER = '"output_tokens"';
+export const AGY_MARKERS = [AGY_USAGE_MARKER, '"type":"USER_INPUT"'];
 const TOTAL_KEYS = ['input_tokens', 'cached_input_tokens', 'output_tokens', 'reasoning_output_tokens', 'total_tokens'];
 const MIN_YEAR = 2020;
 
@@ -33,6 +37,68 @@ export function parsePiTranscript(text, ctx) {
   const parser = createPiParser(ctx);
   parser.push(`${text}\n`);
   return parser.records();
+}
+
+export function parseAgyTranscript(text, ctx) {
+  const parser = createAgyParser(ctx);
+  parser.push(`${text}\n`);
+  return parser.records();
+}
+
+// Antigravity's `transcript.jsonl` keeps one line per step. A `PLANNER_RESPONSE` that finished carries
+// the model and the counters of the call behind it; a `USER_INPUT` may name a model the session
+// switched to, which is the fallback for a response that leaves `model` out. input_tokens is the
+// uncached part and cache_read_tokens the cached one, so input, cacheRead and output map one to one
+// and nothing is written to the cache separately. A step keeps its index when the export rewrites it,
+// so the last line for an index wins. The file has no cwd: the caller passes one from the index.
+export function createAgyParser(ctx, state, { names } = {}) {
+  const { sessionId = '', project = '', cwd: ctxCwd = '' } = ctx ?? {};
+  const host = ctx?.host ?? 'local';
+  const session = nonEmptyString(state?.session) ?? sessionId;
+  const currentCwd = typeof state?.cwd === 'string' ? state.cwd : ctxCwd;
+  // The transcript names no project: it is the last segment of the cwd the conversation index gave.
+  const currentProject = nonEmptyString(state?.project) ?? nonEmptyString(project) ?? lastSegment(currentCwd);
+  let model = nonEmptyString(state?.model) ?? '';
+  const table = restoreTable(state, names);
+  const parse = timestampParser();
+  const inRange = yearCheck();
+  let rowOf = null; // key -> row, built on the first keyed record
+  const add = (obj) => {
+    if (obj?.type === 'USER_INPUT') {
+      const switched = modelFromSettingsChange(obj.content);
+      if (switched) model = switched;
+      return;
+    }
+    if (obj?.type !== 'PLANNER_RESPONSE' || obj?.status !== 'DONE') return;
+    const step = typeof obj.step_index === 'number' && Number.isSafeInteger(obj.step_index) && obj.step_index >= 0
+      ? obj.step_index
+      : null;
+    if (step === null) return;
+    const ms = typeof obj.created_at === 'string' ? parse(obj.created_at) : NaN;
+    if (!inRange(ms)) return;
+    const { input, output, cacheRead } = agyUsage(obj);
+    if (input === 0 && output === 0 && cacheRead === 0) return;
+    const recordModel = agyModelId(obj.model) ?? nonEmptyString(model) ?? 'unknown';
+    const row = [ms, 'antigravity', recordModel, currentProject, session, currentCwd, host, input, output, cacheRead, 0, 0];
+    const key = `antigravity:${session}:${step}`;
+    if (rowOf === null) rowOf = keyRows(table);
+    const at = rowOf.get(key);
+    if (at === undefined) rowOf.set(key, table.push(key, ...row));
+    else table.replace(at, ...row);
+  };
+  return {
+    push(text) {
+      for (const line of completeLines(text)) {
+        if (!AGY_MARKERS.some((marker) => line.includes(marker))) continue;
+        const obj = parseJson(line);
+        if (obj) add(obj);
+      }
+    },
+    pushObject: add,
+    table: () => table,
+    records: () => table.toRecords(),
+    state: ({ binary = false } = {}) => ({ model, session, project: currentProject, cwd: currentCwd, table: encodeTable(table, { binary }) }),
+  };
 }
 
 // Pi (and Orca's Pi chats) keep one JSONL per session: a `session` line with cwd, `model_change`
@@ -309,6 +375,45 @@ export function piUsage(usage) {
     cacheWrite: count(usage.cacheWrite),
     cacheWrite1h: 0,
   };
+}
+
+// Antigravity's counters are already split: input_tokens is the fresh part, cache_read_tokens the
+// cached part, output_tokens the reply (thinking included), and the file has no cache-write count.
+export function agyUsage(obj) {
+  return {
+    input: count(obj.input_tokens),
+    output: count(obj.output_tokens),
+    cacheRead: count(obj.cache_read_tokens),
+    cacheWrite: 0,
+    cacheWrite1h: 0,
+  };
+}
+
+// agy writes the display name (`Gemini 3.8 Flash (High)`) on a switch and the plain id
+// (`gemini-4-neon-high`) on a response; the id is what a price list knows, so the display name is
+// normalized to it. An id is returned unchanged.
+export function agyModelId(value) {
+  const name = nonEmptyString(value);
+  if (!name) return null;
+  if (!name.includes(' ')) return name;
+  return name.toLowerCase().replace(' (', '-').replaceAll('(', '').replaceAll(')', '').split(/\s+/).filter(Boolean).join('-');
+}
+
+// The model a session switched to, from a user turn that reports `Model Selection ... to <name>`.
+// Display names carry their own dot (`Gemini 3.8`), so only a period and a space end the name.
+function modelFromSettingsChange(content) {
+  const text = typeof content === 'string' ? content : '';
+  const at = text.indexOf('Model Selection');
+  if (at === -1) return null;
+  const rest = text.slice(at);
+  const to = rest.indexOf(' to ');
+  if (to === -1) return null;
+  const tail = rest.slice(to + 4);
+  const ends = [tail.indexOf('. '), tail.indexOf('\n'), tail.indexOf('`')].filter((i) => i !== -1);
+  const end = ends.length ? Math.min(...ends) : tail.length;
+  const name = tail.slice(0, end).trim().replace(/^\.+|\.+$/g, '').trim();
+  if (!name || /^none$/i.test(name)) return null;
+  return agyModelId(name);
 }
 
 // The provider's own response id identifies one call across copies of a session (resumed, branched or

@@ -9,6 +9,7 @@ import { createRecordStore } from '../core/record-store.mjs';
 import { NameDict } from '../core/table.mjs';
 import { PROVIDERS } from '../core/providers.mjs';
 import { MARKER_BYTES, createRecordsConsumer, markedLines } from './lines.mjs';
+import { readAgyCwds } from './agy-index.mjs';
 import { createOpencodeSource } from './opencode-source.mjs';
 import { createParsePool } from './parse-pool.mjs';
 import { pathFor, rootSpecs } from './paths.mjs';
@@ -16,11 +17,12 @@ import { listTranscripts, readTranscript } from './transcript-files.mjs';
 
 export { markedLines };
 
-const CACHE_VERSION = 7;
+const CACHE_VERSION = 8;
 const OPENCODE_CACHE_FILE = 'opencode-cache-v1.json';
 // Earlier caches, read when there is no current one. Their Claude entries carry over unread (parsers convert
 // pre-columns states); Codex files are read again, as their keys predate turn-based identity.
-const LEGACY_CACHE_VERSIONS = new Set([4, 5]);
+// 8 introduced Antigravity, whose sessions take their cwd from the conversation index.
+const LEGACY_CACHE_VERSIONS = new Set([4, 5, 6, 7]);
 const REUSE_MS = 5_000;
 const SAVE_EVERY_MS = 30_000;
 // Files read whole for the first time go to parse threads when they are at most this big.
@@ -148,6 +150,19 @@ export function createScanner({
     const roots = await rootSpecs({ platform, env, home, readdir: fs.readdir });
     const run = { map, errors: 0, changed: false, failed: [], disabled: [], skipped: { zstd: 0, tooLarge: 0 } };
     const { found, folders, stats } = await listTranscripts({ fs, platform, roots, extra: folderSpecs, run });
+    // An Antigravity transcript has no workspace of its own, so it takes the one its index records for
+    // the conversation. One small table per root, read once per scan.
+    const agyRoots = [...roots, ...(folderSpecs.antigravity ?? []).map((path) => ({ path, kind: 'antigravity' }))]
+      .filter((spec) => spec.kind === 'antigravity')
+      .map((spec) => spec.path);
+    if (found.some((file) => file.kind === 'antigravity')) {
+      const cwds = await readAgyCwds({ fs, roots: agyRoots, platform }).catch(() => new Map());
+      for (const file of found) {
+        if (file.kind !== 'antigravity') continue;
+        const cwd = cwds.get(file.ctx.sessionId);
+        if (cwd) file.ctx = { ...file.ctx, cwd, project: lastSegmentOf(cwd) };
+      }
+    }
     // Largest files first (a .zst byte costs several plain ones), so no big file starts last while threads idle.
     const weight = (file) => (stats.get(file.path)?.size ?? 0) * (file.compressed ? 7 : 1);
     const order = [...found].sort((a, b) => weight(b) - weight(a));
@@ -514,4 +529,11 @@ async function mapLimit(items, limit, fn) {
 
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+// Last path segment, splitting on both separators so a Windows cwd parses on any OS.
+function lastSegmentOf(path) {
+  if (typeof path !== 'string') return '';
+  const parts = path.split(/[\\/]+/).filter(Boolean);
+  return parts[parts.length - 1] ?? '';
 }

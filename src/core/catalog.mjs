@@ -14,9 +14,10 @@ const CACHE_WRITES = Object.freeze({
   opencode: 'single',
   'opencode-go': 'single',
   deepseek: 'single',
-  zai: 'single',
+  google: 'single',
   moonshotai: 'single',
   volcengine: 'single',
+  zai: 'single',
 });
 const PROVIDERS = Object.keys(CACHE_WRITES);
 const SOURCES = ['litellm', 'manual', 'user'];
@@ -27,7 +28,8 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const FNV_OFFSET = 0x811c9dc5;
 const FNV_PRIME = 0x01000193;
 
-// Exact id, then normalized id, then an alias. Families never match, so an unknown version stays unpriced.
+// Exact id, then normalized id, then the normalized index, then an alias. Families never match, so an
+// unknown version stays unpriced.
 const resolved = new WeakMap();
 export function resolveModel(id, catalog) {
   let memo = resolved.get(catalog);
@@ -48,6 +50,12 @@ function lookupModel(id, catalog) {
     const entry = catalog.entries.get(key);
     if (entry) return entry;
   }
+  // `gemini-3.8-flash-high` normalizes to `gemini-3-8-flash`; the entry keeps its dotted id, so the
+  // index maps a normalized id back to the id the catalog holds. The first entry for a normalized id
+  // wins, so the answer never depends on lookup order.
+  const indexed = catalog.normalized?.get(keys[1]);
+  const target = indexed === undefined ? undefined : catalog.entries.get(indexed);
+  if (target) return target;
   for (const key of keys) {
     for (const entry of catalog.entries.values()) {
       if (entry.aliases.includes(key)) return entry;
@@ -145,7 +153,12 @@ export function buildCatalog(bundled, overlay = null, overrides = null) {
   if (overrides !== null) applyOverrides(entries, overrides, problems);
 
   const sorted = new Map([...entries].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
-  return { entries: sorted, version: versionOf(sorted), problems };
+  const normalized = new Map();
+  for (const id of sorted.keys()) {
+    const key = normalizeModelId(id);
+    if (!normalized.has(key)) normalized.set(key, id);
+  }
+  return { entries: sorted, normalized, version: versionOf(sorted), problems };
 }
 
 function applyOverlay(entries, overlay, problems) {

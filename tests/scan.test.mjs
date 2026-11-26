@@ -452,7 +452,7 @@ test('cache is written atomically, at most once per 30 s, and its timer is unref
   assert.equal(to, fx.cacheFile);
   assert.notEqual(from, to);
   assert.match(from, /\.tmp$/);
-  assert.equal(JSON.parse(await fsp.readFile(fx.cacheFile, 'utf8')).version, 7);
+  assert.equal(JSON.parse(await fsp.readFile(fx.cacheFile, 'utf8')).version, 8);
 
   await fsp.appendFile(file, lines(claudeLine({ id: 'm2' })));
   clock += 10_000;
@@ -884,6 +884,47 @@ test('a Pi session folder is read from the default root and an extra folder, and
   assert.deepEqual(extraFolders(next).filter((f) => f.kind === 'pi'), [{ path: backup, kind: 'pi', state: 'ok', files: 1, records: 1 }]);
 });
 
+test('an Antigravity brain session is read once: transcript.jsonl only, with its cwd from the index', async (t) => {
+  const fx = await fixture(t);
+  const gemini = path.join(fx.base, 'gemini');
+  const logs = path.join(gemini, 'antigravity-cli', 'brain', 'agy-sess-a', '.system_generated', 'logs');
+  await fsp.mkdir(path.join(logs, 'chunks', 'transcript_full'), { recursive: true });
+  const agyLine = (extra) => `${JSON.stringify({
+    step_index: 1,
+    source: 'MODEL',
+    type: 'PLANNER_RESPONSE',
+    status: 'DONE',
+    created_at: '2026-11-26T03:08:36Z',
+    model: 'gemini-4-neon-high',
+    input_tokens: 100,
+    cache_read_tokens: 1000,
+    output_tokens: 40,
+    ...extra,
+  })}
+`;
+  await fsp.writeFile(path.join(logs, 'transcript.jsonl'), agyLine({}));
+  // The full transcript repeats the same steps and chunks/ repeats the file again: neither may count.
+  await fsp.writeFile(path.join(logs, 'transcript_full.jsonl'), agyLine({}));
+  await fsp.writeFile(path.join(logs, 'chunks', 'transcript_full', '00000000.jsonl'), agyLine({}));
+  const indexFile = path.join(gemini, 'antigravity-cli', 'conversation_summaries.db');
+  if (!sqliteAvailable()) return t.skip('node:sqlite is not available');
+  writeIndex(indexFile, [['agy-sess-a', JSON.stringify(['file:///D:/work/agy-proj'])]]);
+
+  const scanner = createScanner({ env: { ...fx.env, GEMINI_HOME: gemini }, home: fx.base, threads: 0 });
+  const result = await scanner.scan();
+  const agy = result.records.toRecords().filter((r) => r.provider === 'antigravity');
+  assert.equal(agy.length, 1, 'one step, not one per copy of the file');
+  assert.deepEqual(
+    [agy[0].project, agy[0].sessionId, agy[0].model, agy[0].input, agy[0].output, agy[0].cacheRead, agy[0].cacheWrite, agy[0].cwd],
+    ['agy-proj', 'agy-sess-a', 'gemini-4-neon-high', 100, 40, 1000, 0, 'D:/work/agy-proj'],
+  );
+  assert.equal(result.folders.find((f) => f.kind === 'antigravity').files, 1);
+
+  // A second scan of an unchanged file reads nothing.
+  const again = await scanner.scan({ force: true });
+  assert.deepEqual(again.records.toRecords().filter((r) => r.provider === 'antigravity'), agy);
+});
+
 test('an extra Claude folder that holds projects is read through projects only, like a default root', async (t) => {
   const fx = await fixture(t);
   const backup = path.join(fx.base, 'backup-claude');
@@ -1246,6 +1287,24 @@ test('a codex .zst rollout gives the same records as the plain .jsonl, inline an
   assert.deepEqual(fromThread.skipped, { zstd: 0, tooLarge: 0 });
 });
 
+function sqliteAvailable() {
+  try {
+    return Boolean(process.getBuiltinModule?.('node:sqlite') ?? true);
+  } catch {
+    return false;
+  }
+}
+
+async function writeIndex(file, rows) {
+  const { DatabaseSync } = await import('node:sqlite');
+  await fsp.mkdir(path.dirname(file), { recursive: true });
+  const db = new DatabaseSync(file);
+  db.exec('CREATE TABLE conversation_summaries (conversation_id TEXT, workspace_uris TEXT)');
+  const insert = db.prepare('INSERT INTO conversation_summaries VALUES (?, ?)');
+  for (const [id, uris] of rows) insert.run(id, uris);
+  db.close();
+}
+
 async function writeLegacyCache(fromFile, legacyFile) {
   const { packRecords } = await import('./legacy-records.mjs');
   const { decodeTable } = await import('../src/core/table-codec.mjs');
@@ -1282,7 +1341,7 @@ for (const version of [4, 5]) {
     assert.deepEqual(rec.log.opened, [codexFile], 'only the Codex file is read');
     assert.deepEqual(warm.records.toRecords(), fresh);
     await migrated.flush();
-    assert.equal(JSON.parse(await fsp.readFile(fx.cacheFile, 'utf8')).version, 7);
+    assert.equal(JSON.parse(await fsp.readFile(fx.cacheFile, 'utf8')).version, 8);
     assert.equal(await fsp.readFile(legacyFile, 'utf8'), legacyBody);
 
     const rec2 = recordingFs();

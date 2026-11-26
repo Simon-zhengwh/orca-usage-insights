@@ -16,23 +16,38 @@ test('home is USERPROFILE then HOME on win32, HOME elsewhere, then the fallback'
   assert.equal(homeDir({ platform: 'linux', env: {}, home: '/fallback' }), '/fallback');
 });
 
-test('win32 roots use backslash paths for the default Claude, Codex and Pi locations', async () => {
+test('win32 roots use backslash paths for the default Claude, Codex, Pi and Antigravity locations', async () => {
   const roots = await resolveRoots({ platform: 'win32', env: { USERPROFILE: 'C:\\Users\\me' }, readdir: noAccounts, realpath: identity });
   assert.deepEqual(roots, {
     claude: ['C:\\Users\\me\\.claude', 'C:\\Users\\me\\.config\\claude'],
     codex: ['C:\\Users\\me\\.codex'],
     pi: ['C:\\Users\\me\\.pi\\agent'],
+    antigravity: [
+      'C:\\Users\\me\\.gemini\\antigravity-cli',
+      'C:\\Users\\me\\.gemini\\antigravity',
+      'C:\\Users\\me\\.gemini\\antigravity-acp',
+    ],
   });
 });
 
 test('darwin and linux roots use HOME, and XDG_CONFIG_HOME moves the claude config root', async () => {
   assert.deepEqual(
     await resolveRoots({ platform: 'darwin', env: { HOME: '/Users/me' }, readdir: noAccounts, realpath: identity }),
-    { claude: ['/Users/me/.claude', '/Users/me/.config/claude'], codex: ['/Users/me/.codex'], pi: ['/Users/me/.pi/agent'] },
+    {
+      claude: ['/Users/me/.claude', '/Users/me/.config/claude'],
+      codex: ['/Users/me/.codex'],
+      pi: ['/Users/me/.pi/agent'],
+      antigravity: ['/Users/me/.gemini/antigravity-cli', '/Users/me/.gemini/antigravity', '/Users/me/.gemini/antigravity-acp'],
+    },
   );
   assert.deepEqual(
     await resolveRoots({ platform: 'linux', env: { HOME: '/home/me', XDG_CONFIG_HOME: '/srv/cfg' }, readdir: noAccounts, realpath: identity }),
-    { claude: ['/home/me/.claude', '/srv/cfg/claude'], codex: ['/home/me/.codex'], pi: ['/home/me/.pi/agent'] },
+    {
+      claude: ['/home/me/.claude', '/srv/cfg/claude'],
+      codex: ['/home/me/.codex'],
+      pi: ['/home/me/.pi/agent'],
+      antigravity: ['/home/me/.gemini/antigravity-cli', '/home/me/.gemini/antigravity', '/home/me/.gemini/antigravity-acp'],
+    },
   );
 });
 
@@ -42,7 +57,12 @@ test('CLAUDE_CONFIG_DIR supplements the default Claude roots, split on commas an
     env: { HOME: '/home/me', CLAUDE_CONFIG_DIR: ' /a/one , ,/b/two ', CODEX_HOME: ' /c/codex ' },
     readdir: noAccounts, realpath: identity,
   });
-  assert.deepEqual(roots, { claude: ['/home/me/.claude', '/home/me/.config/claude', '/a/one', '/b/two'], codex: ['/home/me/.codex', '/c/codex'], pi: ['/home/me/.pi/agent'] });
+  assert.deepEqual(roots, {
+    claude: ['/home/me/.claude', '/home/me/.config/claude', '/a/one', '/b/two'],
+    codex: ['/home/me/.codex', '/c/codex'],
+    pi: ['/home/me/.pi/agent'],
+    antigravity: ['/home/me/.gemini/antigravity-cli', '/home/me/.gemini/antigravity', '/home/me/.gemini/antigravity-acp'],
+  });
 
   const blank = await resolveRoots({ platform: 'linux', env: { HOME: '/home/me', CLAUDE_CONFIG_DIR: ' , ' }, readdir: noAccounts, realpath: identity });
   assert.deepEqual(blank.claude, ['/home/me/.claude', '/home/me/.config/claude']);
@@ -59,12 +79,17 @@ test('roots that cannot be resolved are dropped', async () => {
     readdir: noAccounts,
     realpath,
   });
-  assert.deepEqual(roots, { claude: ['/x/here'], codex: [], pi: [] });
+  assert.deepEqual(roots, { claude: ['/x/here'], codex: [], pi: [], antigravity: [] });
 });
 
 test('PI_CODING_AGENT_DIR moves the Pi agent dir and is deduped against the default', async () => {
   const roots = await resolveRoots({ platform: 'linux', home: '/fixture', env: { PI_CODING_AGENT_DIR: ' /srv/pi ' }, readdir: noAccounts, realpath: identity });
   assert.deepEqual(roots.pi, ['/fixture/.pi/agent', '/srv/pi']);
+});
+
+test('GEMINI_HOME moves every Antigravity root, and a missing surface is simply absent', async () => {
+  const roots = await resolveRoots({ platform: 'linux', home: '/fixture', env: { GEMINI_HOME: ' /srv/gemini ' }, readdir: noAccounts, realpath: identity });
+  assert.deepEqual(roots.antigravity, ['/srv/gemini/antigravity-cli', '/srv/gemini/antigravity', '/srv/gemini/antigravity-acp']);
 });
 
 test('roots are deduped by realpath, case-insensitively only on win32', async () => {

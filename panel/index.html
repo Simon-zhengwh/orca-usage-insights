@@ -718,7 +718,7 @@ function trim(x) {
 // Display names per provider (the `provider` column of a usage record), for the panel, the worker and
 // Explain prompts. Pure, and bundled into the panel by scripts/build.mjs. A provider added to the
 // scanner gets its name here.
-const PROVIDER_LABELS = Object.freeze({ claude: 'Claude Code', codex: 'Codex', pi: 'Pi', opencode: 'OpenCode' })
+const PROVIDER_LABELS = Object.freeze({ claude: 'Claude Code', codex: 'Codex', pi: 'Pi', opencode: 'OpenCode', antigravity: 'Antigravity' })
 
 function providerLabel(provider, fallback = provider) {
   return Object.hasOwn(PROVIDER_LABELS, provider) ? PROVIDER_LABELS[provider] : fallback
@@ -956,7 +956,7 @@ function sparkline(values, { width = 96, height = 26 } = {}) {
   return svg(width, height, `<polyline points="${d}" fill="none" class="spark" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${lx}" cy="${ly}" r="2.5" class="spark-dot"/>`, '趋势')
 }
 
-const PROVIDER_COLORS = { claude: 'var(--s2)', codex: 'var(--s1)', opencode: 'var(--s3)', pi: 'var(--s4)' }
+const PROVIDER_COLORS = { claude: 'var(--s2)', codex: 'var(--s1)', opencode: 'var(--s3)', pi: 'var(--s4)', antigravity: 'var(--s5)' }
 const providerColor = (p, i = 0) => PROVIDER_COLORS[p] ?? ['var(--s3)', 'var(--s4)', 'var(--s5)'][i % 3]
 
 // Monotone cubic (Fritsch–Carlson) path through points, so smoothing never overshoots below 0.
@@ -1358,6 +1358,7 @@ const REASON_INFO = {
   ssh: { label: 'SSH 主机上的用量', next: 'Breakdown 只读取本机的转录。SSH 上的用量仍计入总量。' },
   opencode: { label: 'OpenCode 会话', next: 'Breakdown 只读取 Claude Code 与 Codex 转录。OpenCode 用量仍计入总量。' },
   pi: { label: 'Pi 会话', next: 'Breakdown 只读取 Claude Code 与 Codex 转录。Pi 用量仍计入总量。' },
+  antigravity: { label: 'Antigravity 会话', next: 'Breakdown 只读取 Claude Code 与 Codex 转录。Antigravity 用量仍计入总量。' },
   zstd: { label: '压缩的 Codex 文件', next: '这个 Orca 自带的 Node.js 读不了 .zst 文件。升级 Orca 即可解决。' },
   'too-large': { label: '文件太大', next: '超过 64 MB 的压缩转录会被跳过。' },
   parse: { label: '读不了的文件', next: '看上面“本机”的状态，可以知道哪些文件读失败了。' },

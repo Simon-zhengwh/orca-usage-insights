@@ -195,6 +195,25 @@ test('switching back to usage does not refetch the report', async () => {
   assert.equal(get('log').hidden, true)
 })
 
+test('an Antigravity provider gets its own label and colour in the provider list', async () => {
+  const { get } = await mountPanel((input) => {
+    const report = sampleReport(input.range, input.includeCache)
+    report.providers = ['claude', 'antigravity']
+    report.byProvider = [
+      { provider: 'claude', total: 200000, costUsd: 20, share: 0.7 },
+      { provider: 'antigravity', total: 80000, costUsd: 6, share: 0.3 },
+    ]
+    report.seriesByProvider = [
+      { provider: 'claude', daily: report.daily },
+      { provider: 'antigravity', daily: report.daily.map((d) => ({ ...d, total: d.total / 2 })) },
+    ]
+    return report
+  })
+  assert.match(get('providers').innerHTML, /Antigravity/)
+  assert.match(get('ov-providers').innerHTML, /Antigravity/)
+  assert.match(get('trend').innerHTML, /var\(--s5\)/, 'antigravity draws in the fifth series colour')
+});
+
 test('panel shows an error state when the worker fails', async () => {
   const html = readFileSync(new URL('../panel/index.html', import.meta.url), 'utf8')
   const script = html.match(/<script>([\s\S]*?)<\/script>/)[1]

@@ -13,7 +13,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 12.5, '1h': 20 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-fable-5-1',
@@ -25,7 +25,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 12.5, '1h': 20 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-fable-5-2',
@@ -37,7 +37,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 10, '1h': 16 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-haiku-4-5',
@@ -49,7 +49,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 1.25, '1h': 2 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-haiku-5-5',
@@ -64,7 +64,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-mythos-5',
@@ -76,7 +76,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 12.5, '1h': 20 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-mythos-5-1',
@@ -88,7 +88,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 12.5, '1h': 20 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-mythos-5-2',
@@ -100,7 +100,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 10, '1h': 16 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-mythos-preview',
@@ -112,7 +112,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 12.5, '1h': 20 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-opus-4-5',
@@ -124,7 +124,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 6.25, '1h': 10 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-opus-4-6',
@@ -136,7 +136,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 6.25, '1h': 10 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-opus-4-7',
@@ -148,7 +148,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 6.25, '1h': 10 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-opus-4-8',
@@ -160,7 +160,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 6.25, '1h': 10 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-opus-5',
@@ -172,7 +172,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 6.25, '1h': 10 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-opus-5-5',
@@ -184,7 +184,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 5, '1h': 8 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-sonnet-4-5',
@@ -196,7 +196,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 3.75, '1h': 6 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-sonnet-4-6',
@@ -208,7 +208,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 3.75, '1h': 6 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-sonnet-5',
@@ -220,7 +220,7 @@ export const BUNDLED = [
     cacheWrite: { '5m': 2.5, '1h': 4 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'claude-sonnet-5-5',
@@ -232,7 +232,37 @@ export const BUNDLED = [
     cacheWrite: { '5m': 2.5, '1h': 4 },
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'deep-research-max-preview-04-2026',
+    provider: 'google',
+    aliases: [],
+    input: 2,
+    output: 12,
+    cacheRead: 0.2,
+    cacheWrite: { default: 0 },
+    tiers: [
+      { above: 200000, input: 4, output: 18, cacheRead: 0.4, cacheWrite: { default: 0 } },
+    ],
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'deep-research-preview-04-2026',
+    provider: 'google',
+    aliases: [],
+    input: 2,
+    output: 12,
+    cacheRead: 0.2,
+    cacheWrite: { default: 0 },
+    tiers: [
+      { above: 200000, input: 4, output: 18, cacheRead: 0.4, cacheWrite: { default: 0 } },
+    ],
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
   },
   {
     id: 'deepseek-flash',
@@ -244,7 +274,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'deepseek-v4-1-flash-260910',
@@ -256,7 +286,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'deepseek-v4-1-flash-261017',
@@ -268,7 +298,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'deepseek-v4-1-flash-economy-261017',
@@ -280,7 +310,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'deepseek-v4-flash',
@@ -292,7 +322,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'deepseek-v4-flash-ga-260731',
@@ -304,7 +334,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'deepseek-v4-flash-vision-exp',
@@ -316,7 +346,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'deepseek-v4-pro',
@@ -328,7 +358,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'deepseek-v4-pro-ga-260813',
@@ -340,7 +370,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'doubao-seed-2-0-lite-260428',
@@ -355,7 +385,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'doubao-seed-2-0-mini-260428',
@@ -370,7 +400,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'doubao-seed-2-0-pro-260215',
@@ -385,7 +415,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'doubao-seed-2-1-lite-260915',
@@ -397,7 +427,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'doubao-seed-2-1-pro-260628',
@@ -409,7 +439,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'doubao-seed-2-1-pro-260915',
@@ -421,7 +451,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'doubao-seed-2-1-turbo-260628',
@@ -433,7 +463,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'doubao-seed-character-260628',
@@ -445,7 +475,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'doubao-seed-evolving',
@@ -457,7 +487,259 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-2.5-flash',
+    provider: 'google',
+    aliases: [],
+    input: 0.3,
+    output: 2.5,
+    cacheRead: 0.03,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-2.5-flash-image',
+    provider: 'google',
+    aliases: [],
+    input: 0.3,
+    output: 2.5,
+    cacheRead: 0.075,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-2.5-flash-lite',
+    provider: 'google',
+    aliases: [],
+    input: 0.1,
+    output: 0.4,
+    cacheRead: 0.01,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-2.5-pro',
+    provider: 'google',
+    aliases: [],
+    input: 1.25,
+    output: 10,
+    cacheRead: 0.125,
+    cacheWrite: { default: 0 },
+    tiers: [
+      { above: 200000, input: 2.5, output: 15, cacheRead: 0.25, cacheWrite: { default: 0 } },
+    ],
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-3-flash-preview',
+    provider: 'google',
+    aliases: [],
+    input: 0.5,
+    output: 3,
+    cacheRead: 0.05,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-3.1-flash-lite',
+    provider: 'google',
+    aliases: [],
+    input: 0.25,
+    output: 1.5,
+    cacheRead: 0.025,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-3.1-pro-preview',
+    provider: 'google',
+    aliases: [],
+    input: 2,
+    output: 12,
+    cacheRead: 0.2,
+    cacheWrite: { default: 0 },
+    tiers: [
+      { above: 200000, input: 4, output: 18, cacheRead: 0.4, cacheWrite: { default: 0 } },
+    ],
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-3.1-pro-preview-customtools',
+    provider: 'google',
+    aliases: [],
+    input: 2,
+    output: 12,
+    cacheRead: 0.2,
+    cacheWrite: { default: 0 },
+    tiers: [
+      { above: 200000, input: 4, output: 18, cacheRead: 0.4, cacheWrite: { default: 0 } },
+    ],
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-3.5-flash',
+    provider: 'google',
+    aliases: [],
+    input: 1.5,
+    output: 9,
+    cacheRead: 0.15,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-3.5-flash-lite',
+    provider: 'google',
+    aliases: [],
+    input: 0.3,
+    output: 2.5,
+    cacheRead: 0.03,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-3.6-flash',
+    provider: 'google',
+    aliases: [],
+    input: 0.75,
+    output: 3.75,
+    cacheRead: 0.075,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-3.7-flash',
+    provider: 'google',
+    aliases: [],
+    input: 0.75,
+    output: 3.75,
+    cacheRead: 0.075,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-3.8-flash',
+    provider: 'google',
+    aliases: [],
+    input: 0.75,
+    output: 3.75,
+    cacheRead: 0.075,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-4-argon',
+    provider: 'google',
+    aliases: [],
+    input: 2,
+    output: 10,
+    cacheRead: 0.1,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-4-carbon',
+    provider: 'google',
+    aliases: [],
+    input: 2,
+    output: 10,
+    cacheRead: 0.1,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-4-hydrogen',
+    provider: 'google',
+    aliases: [],
+    input: 1.5,
+    output: 7.5,
+    cacheRead: 0.075,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-4-neon',
+    provider: 'google',
+    aliases: [],
+    input: 3,
+    output: 15,
+    cacheRead: 0.15,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-flash-latest',
+    provider: 'google',
+    aliases: [],
+    input: 0.75,
+    output: 3.75,
+    cacheRead: 0.075,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-flash-lite-latest',
+    provider: 'google',
+    aliases: [],
+    input: 0.3,
+    output: 2.5,
+    cacheRead: 0.03,
+    cacheWrite: { default: 0 },
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
+  },
+  {
+    id: 'gemini-pro-latest',
+    provider: 'google',
+    aliases: [],
+    input: 2,
+    output: 12,
+    cacheRead: 0.2,
+    cacheWrite: { default: 0 },
+    tiers: [
+      { above: 200000, input: 4, output: 18, cacheRead: 0.4, cacheWrite: { default: 0 } },
+    ],
+    contextWindow: null,
+    source: 'manual',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-4.5',
@@ -469,7 +751,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-4.5-air',
@@ -481,7 +763,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-4.5-flash',
@@ -493,7 +775,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-4.5v',
@@ -505,7 +787,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-4.6',
@@ -517,7 +799,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-4.6v',
@@ -529,7 +811,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-4.6v-flash',
@@ -541,7 +823,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-4.7',
@@ -553,7 +835,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-4.7-flash',
@@ -565,7 +847,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-4.7-flashx',
@@ -577,7 +859,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-5',
@@ -589,7 +871,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-5-2-260617',
@@ -601,7 +883,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-5-3-flash-260828',
@@ -613,7 +895,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-5-turbo',
@@ -625,7 +907,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-5.1',
@@ -637,7 +919,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-5.2',
@@ -649,7 +931,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-5.3',
@@ -661,7 +943,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-5.3-flash',
@@ -673,7 +955,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-5.3-flashx',
@@ -685,7 +967,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-5.3-flashx-legal',
@@ -697,7 +979,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'glm-5v-turbo',
@@ -709,7 +991,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-5.6',
@@ -724,7 +1006,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-5.6-cyber',
@@ -739,7 +1021,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-5.6-luna',
@@ -754,7 +1036,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-5.6-sol',
@@ -769,7 +1051,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-5.6-terra',
@@ -784,7 +1066,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-6-astra',
@@ -799,7 +1081,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-6-luna',
@@ -814,7 +1096,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-6-rosalind',
@@ -829,7 +1111,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-6-sol',
@@ -844,7 +1126,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-6.1-sol',
@@ -859,7 +1141,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-6.1-terra',
@@ -874,7 +1156,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-6.2-astra',
@@ -889,7 +1171,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-6.2-astra-healthcare',
@@ -904,7 +1186,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-6.2-astra-law',
@@ -919,7 +1201,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-6.2-sol',
@@ -934,7 +1216,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'gpt-6.2-sol-healthcare',
@@ -949,7 +1231,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'litellm',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'kimi-k2.6',
@@ -961,7 +1243,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'kimi-k2.7-code',
@@ -973,7 +1255,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'kimi-k2.7-code-highspeed',
@@ -985,7 +1267,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'kimi-k3',
@@ -997,7 +1279,7 @@ export const BUNDLED = [
     cacheWrite: { default: 3 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'kimi-k3-1-pro-261024',
@@ -1009,7 +1291,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'kimi-k3.1-pro',
@@ -1021,7 +1303,7 @@ export const BUNDLED = [
     cacheWrite: { default: 2 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'kimi-k3.1-pro-highspeed',
@@ -1033,7 +1315,7 @@ export const BUNDLED = [
     cacheWrite: { default: 4 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/beam-free',
@@ -1045,7 +1327,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/cat-jam-free',
@@ -1057,7 +1339,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/claude-haiku-5-5',
@@ -1072,7 +1354,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/crouton-alpha-free',
@@ -1084,7 +1366,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/deepseek-v4-pro',
@@ -1096,7 +1378,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/deepseek-v4.1-flash',
@@ -1108,7 +1390,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/gemini-4-argon',
@@ -1120,7 +1402,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/gemini-4-argon-contributor',
@@ -1132,7 +1414,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/glm-5.2',
@@ -1144,7 +1426,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/glm-5.3',
@@ -1156,7 +1438,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/glm-5.3-flash',
@@ -1168,7 +1450,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/gpt-5.6-luna',
@@ -1183,7 +1465,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/gpt-6-luna',
@@ -1198,7 +1480,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/grok-4.7',
@@ -1213,7 +1495,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/hungerg-free',
@@ -1225,7 +1507,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/hy3',
@@ -1237,7 +1519,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/hy4',
@@ -1249,7 +1531,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/hy4-flash-free',
@@ -1261,7 +1543,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/hy4-preview',
@@ -1273,7 +1555,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/iceman-contributor-free',
@@ -1285,7 +1567,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/kimi-k2.7-code',
@@ -1297,7 +1579,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/kimi-k3',
@@ -1309,7 +1591,7 @@ export const BUNDLED = [
     cacheWrite: { default: 3 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/kimi-k3.1-pro',
@@ -1321,7 +1603,7 @@ export const BUNDLED = [
     cacheWrite: { default: 2 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/longcat-2.0',
@@ -1333,7 +1615,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/longcat-2.5',
@@ -1345,7 +1627,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/longcat-2.5-free',
@@ -1357,7 +1639,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/longcat-2.5-preview-free',
@@ -1369,7 +1651,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/mimo-v2.5',
@@ -1381,7 +1663,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/mimo-v2.5-pro',
@@ -1393,7 +1675,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/mimo-v2.6-flash',
@@ -1405,7 +1687,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/mimo-v2.6-pro',
@@ -1417,7 +1699,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/minimax-m2.7',
@@ -1429,7 +1711,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0.375 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/minimax-m3',
@@ -1444,7 +1726,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/minimax-m3.1-flash',
@@ -1456,7 +1738,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/minimax-m3.1-flash-free',
@@ -1468,7 +1750,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/muse-spark-1.2-contributor',
@@ -1480,7 +1762,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/muse-spark-1.3-contributor',
@@ -1492,7 +1774,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/qwen3.7-plus',
@@ -1507,7 +1789,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/qwen3.8-flash',
@@ -1519,7 +1801,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0.2 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/qwen3.8-max',
@@ -1531,7 +1813,7 @@ export const BUNDLED = [
     cacheWrite: { default: 2.5 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/qwen4-max',
@@ -1543,7 +1825,7 @@ export const BUNDLED = [
     cacheWrite: { default: 1.875 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/space-bunny',
@@ -1555,7 +1837,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/step-5-preview',
@@ -1567,7 +1849,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode-go/step-5-preview-free',
@@ -1579,7 +1861,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/beam-free',
@@ -1591,7 +1873,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/big-pickle',
@@ -1603,7 +1885,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/cat-jam-free',
@@ -1615,7 +1897,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-3-5-haiku',
@@ -1627,7 +1909,7 @@ export const BUNDLED = [
     cacheWrite: { default: 1 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-fable-5',
@@ -1639,7 +1921,7 @@ export const BUNDLED = [
     cacheWrite: { default: 12.5 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-fable-5-1',
@@ -1651,7 +1933,7 @@ export const BUNDLED = [
     cacheWrite: { default: 12.5 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-fable-5-2',
@@ -1663,7 +1945,7 @@ export const BUNDLED = [
     cacheWrite: { default: 10 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-haiku-4-5',
@@ -1675,7 +1957,7 @@ export const BUNDLED = [
     cacheWrite: { default: 1.25 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-haiku-5-5',
@@ -1690,7 +1972,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-opus-4-1',
@@ -1702,7 +1984,7 @@ export const BUNDLED = [
     cacheWrite: { default: 18.75 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-opus-4-5',
@@ -1714,7 +1996,7 @@ export const BUNDLED = [
     cacheWrite: { default: 6.25 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-opus-4-6',
@@ -1726,7 +2008,7 @@ export const BUNDLED = [
     cacheWrite: { default: 6.25 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-opus-4-7',
@@ -1738,7 +2020,7 @@ export const BUNDLED = [
     cacheWrite: { default: 6.25 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-opus-4-8',
@@ -1750,7 +2032,7 @@ export const BUNDLED = [
     cacheWrite: { default: 6.25 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-opus-5',
@@ -1762,7 +2044,7 @@ export const BUNDLED = [
     cacheWrite: { default: 6.25 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-opus-5-5',
@@ -1774,7 +2056,7 @@ export const BUNDLED = [
     cacheWrite: { default: 5 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-sonnet-4',
@@ -1789,7 +2071,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-sonnet-4-5',
@@ -1804,7 +2086,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-sonnet-4-6',
@@ -1816,7 +2098,7 @@ export const BUNDLED = [
     cacheWrite: { default: 3.75 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-sonnet-5',
@@ -1828,7 +2110,7 @@ export const BUNDLED = [
     cacheWrite: { default: 2.5 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/claude-sonnet-5-5',
@@ -1840,7 +2122,7 @@ export const BUNDLED = [
     cacheWrite: { default: 2.5 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/crouton-alpha-free',
@@ -1852,7 +2134,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/deepseek-v4-flash',
@@ -1864,7 +2146,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/deepseek-v4-flash-free',
@@ -1876,7 +2158,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/deepseek-v4-flash-vision-exp',
@@ -1888,7 +2170,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/deepseek-v4-pro',
@@ -1900,7 +2182,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/deepseek-v4.1-flash',
@@ -1912,7 +2194,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/deepseek-v4.1-flash-free',
@@ -1924,7 +2206,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/exo-free',
@@ -1936,7 +2218,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/fledge-alpha-free',
@@ -1948,7 +2230,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/flint-40b-free',
@@ -1960,7 +2242,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gemini-3-flash',
@@ -1972,7 +2254,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gemini-3-pro',
@@ -1987,7 +2269,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gemini-3.1-pro',
@@ -2002,7 +2284,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gemini-3.5-flash',
@@ -2014,7 +2296,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gemini-3.5-flash-lite',
@@ -2026,7 +2308,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gemini-3.6-flash',
@@ -2038,7 +2320,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gemini-3.7-flash',
@@ -2050,7 +2332,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gemini-3.8-flash',
@@ -2062,7 +2344,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gemini-4-argon',
@@ -2074,7 +2356,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gemini-4-carbon',
@@ -2086,7 +2368,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gemini-4-hydrogen',
@@ -2098,7 +2380,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gemini-4-neon',
@@ -2110,7 +2392,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/glm-4.6',
@@ -2122,7 +2404,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/glm-4.7',
@@ -2134,7 +2416,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/glm-4.7-free',
@@ -2146,7 +2428,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/glm-5',
@@ -2158,7 +2440,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/glm-5-free',
@@ -2170,7 +2452,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/glm-5.1',
@@ -2182,7 +2464,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/glm-5.2',
@@ -2194,7 +2476,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/glm-5.3',
@@ -2206,7 +2488,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/glm-5.3-flash',
@@ -2218,7 +2500,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/glm-5.3-flash-free',
@@ -2230,7 +2512,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5',
@@ -2242,7 +2524,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5-codex',
@@ -2254,7 +2536,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5-nano',
@@ -2266,7 +2548,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.1',
@@ -2278,7 +2560,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.1-codex',
@@ -2290,7 +2572,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.1-codex-max',
@@ -2302,7 +2584,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.1-codex-mini',
@@ -2314,7 +2596,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.2',
@@ -2326,7 +2608,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.2-codex',
@@ -2338,7 +2620,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.3-codex',
@@ -2350,7 +2632,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.3-codex-spark',
@@ -2362,7 +2644,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.4',
@@ -2377,7 +2659,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.4-mini',
@@ -2389,7 +2671,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.4-nano',
@@ -2401,7 +2683,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.4-pro',
@@ -2413,7 +2695,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.5',
@@ -2428,7 +2710,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.5-pro',
@@ -2440,7 +2722,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.6-luna',
@@ -2455,7 +2737,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.6-sol',
@@ -2470,7 +2752,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-5.6-terra',
@@ -2485,7 +2767,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-6-astra',
@@ -2500,7 +2782,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-6-luna',
@@ -2515,7 +2797,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-6-sol',
@@ -2530,7 +2812,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-6.1-sol',
@@ -2545,7 +2827,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-6.2-astra',
@@ -2560,7 +2842,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/gpt-6.2-sol',
@@ -2575,7 +2857,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/grok-4.5',
@@ -2590,7 +2872,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/grok-4.6',
@@ -2605,7 +2887,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/grok-4.7',
@@ -2620,7 +2902,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/grok-build-0.1',
@@ -2632,7 +2914,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/grok-code',
@@ -2644,7 +2926,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/hy3-free',
@@ -2656,7 +2938,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/hy3-preview-free',
@@ -2668,7 +2950,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/hy4-flash-free',
@@ -2680,7 +2962,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/iceman-free',
@@ -2692,7 +2974,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/inkling-2-small-free',
@@ -2704,7 +2986,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/kimi-k2',
@@ -2716,7 +2998,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/kimi-k2-thinking',
@@ -2728,7 +3010,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/kimi-k2.5',
@@ -2740,7 +3022,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/kimi-k2.5-free',
@@ -2752,7 +3034,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/kimi-k2.6',
@@ -2764,7 +3046,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/kimi-k2.7-code',
@@ -2776,7 +3058,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/kimi-k3',
@@ -2788,7 +3070,7 @@ export const BUNDLED = [
     cacheWrite: { default: 3 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/kimi-k3.1-pro',
@@ -2800,7 +3082,7 @@ export const BUNDLED = [
     cacheWrite: { default: 2 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/laguna-s-2.1-free',
@@ -2812,7 +3094,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/ling-2.6-flash-free',
@@ -2824,7 +3106,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/ling-3.0-flash-fin-free',
@@ -2836,7 +3118,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/ling-3.0-flash-free',
@@ -2848,7 +3130,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/ling-3.0-tiny-free',
@@ -2860,7 +3142,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/ling-3.1-flash-free',
@@ -2872,7 +3154,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/ll-alpha-free',
@@ -2884,7 +3166,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/longcat-2.0-free',
@@ -2896,7 +3178,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/longcat-2.5-free',
@@ -2908,7 +3190,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/longcat-2.5-preview-free',
@@ -2920,7 +3202,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/mimo-v2-flash-free',
@@ -2932,7 +3214,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/mimo-v2-omni-free',
@@ -2944,7 +3226,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/mimo-v2-pro-free',
@@ -2956,7 +3238,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/mimo-v2.5-free',
@@ -2968,7 +3250,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/mimo-v2.6-flash-free',
@@ -2980,7 +3262,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/minimax-m2.1',
@@ -2992,7 +3274,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/minimax-m2.1-free',
@@ -3004,7 +3286,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/minimax-m2.5',
@@ -3016,7 +3298,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/minimax-m2.5-free',
@@ -3028,7 +3310,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/minimax-m2.7',
@@ -3040,7 +3322,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/minimax-m3',
@@ -3052,7 +3334,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/minimax-m3-free',
@@ -3064,7 +3346,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/minimax-m3.1-flash-free',
@@ -3076,7 +3358,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/mistral-large-4',
@@ -3088,7 +3370,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/muse-ember-1.0',
@@ -3103,7 +3385,7 @@ export const BUNDLED = [
     ],
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/muse-spark-1.2',
@@ -3115,7 +3397,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/muse-spark-1.2-contributor-free',
@@ -3127,7 +3409,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/muse-spark-1.3',
@@ -3139,7 +3421,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/muse-spark-1.3-contributor-free',
@@ -3151,7 +3433,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/muse-wonder-1.0',
@@ -3163,7 +3445,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/nemotron-3-super-free',
@@ -3175,7 +3457,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/nemotron-3-ultra-free',
@@ -3187,7 +3469,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/nemotron-3.5-lightning-free',
@@ -3199,7 +3481,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/nemotron-3.5-super-vl-free',
@@ -3211,7 +3493,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/north-mini-code-free',
@@ -3223,7 +3505,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/pulse-alpha-free',
@@ -3235,7 +3517,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/qwen3-coder',
@@ -3247,7 +3529,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/qwen3.5-plus',
@@ -3259,7 +3541,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0.25 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/qwen3.6-plus',
@@ -3271,7 +3553,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0.625 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/qwen3.6-plus-free',
@@ -3283,7 +3565,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/qwen3.8-flash',
@@ -3295,7 +3577,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0.2 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/qwen3.8-max',
@@ -3307,7 +3589,7 @@ export const BUNDLED = [
     cacheWrite: { default: 2.5 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/qwen4-max-free',
@@ -3319,7 +3601,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/ring-2.6-1t-free',
@@ -3331,7 +3613,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/space-bunny-free',
@@ -3343,7 +3625,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/step-5-preview-free',
@@ -3355,7 +3637,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/tidepool-alpha-free',
@@ -3367,7 +3649,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/trinity-large-preview-free',
@@ -3379,7 +3661,7 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
   {
     id: 'opencode/x-preview-f-free',
@@ -3391,6 +3673,6 @@ export const BUNDLED = [
     cacheWrite: { default: 0 },
     contextWindow: null,
     source: 'manual',
-    asOf: '2026-11-25',
+    asOf: '2026-11-26',
   },
 ];

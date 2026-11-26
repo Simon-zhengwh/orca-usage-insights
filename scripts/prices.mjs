@@ -8,7 +8,7 @@ import { bundledSubset, inBundleScope, parseLiteLLM, parseModelsDev, today } fro
 const OPENCODE = ['opencode', 'opencode-go']
 // Makers ship from models.dev alone: LiteLLM lists the same bare ids at other rates, and one id
 // must keep one price.
-const MAKERS = ['deepseek', 'zai', 'moonshotai', 'volcengine']
+const MAKERS = ['deepseek', 'google', 'moonshotai', 'volcengine', 'zai']
 const OUT = fileURLToPath(new URL('../src/core/catalog-data.mjs', import.meta.url))
 const args = process.argv.slice(2)
 const files = args.filter((arg) => !arg.startsWith('--'))

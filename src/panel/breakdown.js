@@ -18,6 +18,7 @@ export const REASON_INFO = {
   ssh: { label: 'SSH 主机上的用量', next: 'Breakdown 只读取本机的转录。SSH 上的用量仍计入总量。' },
   opencode: { label: 'OpenCode 会话', next: 'Breakdown 只读取 Claude Code 与 Codex 转录。OpenCode 用量仍计入总量。' },
   pi: { label: 'Pi 会话', next: 'Breakdown 只读取 Claude Code 与 Codex 转录。Pi 用量仍计入总量。' },
+  antigravity: { label: 'Antigravity 会话', next: 'Breakdown 只读取 Claude Code 与 Codex 转录。Antigravity 用量仍计入总量。' },
   zstd: { label: '压缩的 Codex 文件', next: '这个 Orca 自带的 Node.js 读不了 .zst 文件。升级 Orca 即可解决。' },
   'too-large': { label: '文件太大', next: '超过 64 MB 的压缩转录会被跳过。' },
   parse: { label: '读不了的文件', next: '看上面“本机”的状态，可以知道哪些文件读失败了。' },

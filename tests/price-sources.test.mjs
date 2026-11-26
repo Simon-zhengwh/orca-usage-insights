@@ -24,6 +24,11 @@ test('normalizeModelId strips provider prefixes, version and date suffixes', () 
   assert.equal(normalizeModelId('claude-opus-5-5[1m]'), 'claude-opus-5-5');
   assert.equal(normalizeModelId('claude-haiku-4-5-20251001'), 'claude-haiku-4-5');
   assert.equal(normalizeModelId('gpt-6-sol'), 'gpt-6-sol');
+  // A thinking level and a dotted separator are not part of the model: Antigravity writes both.
+  assert.equal(normalizeModelId('gemini-4-neon-high'), 'gemini-4-neon');
+  assert.equal(normalizeModelId('gemini-4-neon-xhigh'), 'gemini-4-neon');
+  assert.equal(normalizeModelId('claude-opus-4.6-thinking'), 'claude-opus-4-6');
+  assert.equal(normalizeModelId('google/gemini-3.8-flash-medium'), 'gemini-3-8-flash');
 });
 
 test('today formats the local calendar date as YYYY-MM-DD', () => {

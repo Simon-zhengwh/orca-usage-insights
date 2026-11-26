@@ -4,9 +4,12 @@ import { readFileSync } from 'node:fs';
 import { mergeTables } from '../src/core/record-store.mjs';
 import { tableFromRecords } from '../src/core/table.mjs';
 import {
+  agyModelId,
+  createAgyParser,
   createClaudeParser,
   createCodexParser,
   createPiParser,
+  parseAgyTranscript,
   parseClaudeTranscript,
   parseCodexTranscript,
   parsePiTranscript,
@@ -15,6 +18,7 @@ import {
 const claudeText = readFileSync(new URL('./fixtures/claude.jsonl', import.meta.url), 'utf8');
 const codexText = readFileSync(new URL('./fixtures/codex.jsonl', import.meta.url), 'utf8');
 const piText = readFileSync(new URL('./fixtures/pi.jsonl', import.meta.url), 'utf8');
+const agyText = readFileSync(new URL('./fixtures/antigravity.jsonl', import.meta.url), 'utf8');
 // Each element keeps its trailing newline, so slices stay on line boundaries.
 const claudeLines = claudeText.split(/(?<=\n)/);
 const codexLines = codexText.split(/(?<=\n)/);
@@ -22,6 +26,7 @@ const piLines = piText.split(/(?<=\n)/);
 const claudeCtx = { sessionId: 'ctx-session', project: 'ctx-project' };
 const codexCtx = { sessionId: 'rollout-1', project: 'fallback' };
 const piCtx = { sessionId: 'ctx-session', project: 'ctx-project' };
+const agyCtx = { sessionId: 'afaf5640-7043-477b-b90d-b79ad3707153', project: '', cwd: 'D:/work/proj-win' };
 
 const piExpected = [
   // One record per provider response; the copy of the same response replaces it, so the last line wins.
@@ -80,6 +85,54 @@ test('pi keeps the request duration when it is recorded, so the panel can show a
   assert.equal('durationMs' in zero, false, 'a zero duration is not a measurement');
 });
 
+
+const agyExpected = [
+  // The rewritten copy of step 1 replaces its row, so the last line for a step wins.
+  { key: 'antigravity:afaf5640-7043-477b-b90d-b79ad3707153:1', provider: 'antigravity', ts: '2026-11-26T03:08:36.000Z', model: 'gemini-4-neon-high', project: 'proj-win', sessionId: 'afaf5640-7043-477b-b90d-b79ad3707153', input: 2237, output: 901, cacheRead: 11669, cacheWrite: 0, cacheWrite1h: 0, cwd: 'D:/work/proj-win', host: 'local' },
+  // A display name on the response becomes the id a price list knows.
+  { key: 'antigravity:afaf5640-7043-477b-b90d-b79ad3707153:3', provider: 'antigravity', ts: '2026-11-26T03:09:03.000Z', model: 'gemini-4-carbon-high', project: 'proj-win', sessionId: 'afaf5640-7043-477b-b90d-b79ad3707153', input: 5281, output: 539, cacheRead: 13907, cacheWrite: 0, cacheWrite1h: 0, cwd: 'D:/work/proj-win', host: 'local' },
+  // No model on the response: the model the user switched to is used.
+  { key: 'antigravity:afaf5640-7043-477b-b90d-b79ad3707153:5', provider: 'antigravity', ts: '2026-11-26T03:10:05.000Z', model: 'gemini-3.8-flash-high', project: 'proj-win', sessionId: 'afaf5640-7043-477b-b90d-b79ad3707153', input: 3140, output: 48, cacheRead: 245636, cacheWrite: 0, cacheWrite1h: 0, cwd: 'D:/work/proj-win', host: 'local' },
+];
+
+test('antigravity counts finished model responses, maps a display name to its id and lets the last line of a step win', () => {
+  assert.deepEqual(parseAgyTranscript(agyText, agyCtx), agyExpected);
+});
+
+test('antigravity skips steps that are running, carry no counters or are not model responses', () => {
+  const step = (extra) => JSON.stringify({ step_index: 9, source: 'MODEL', type: 'PLANNER_RESPONSE', status: 'DONE', created_at: '2026-11-26T03:00:00Z', model: 'gemini-4-neon-high', input_tokens: 1, output_tokens: 2, ...extra });
+  assert.deepEqual(parseAgyTranscript(step({ status: 'RUNNING' }), agyCtx), []);
+  assert.deepEqual(parseAgyTranscript(step({ input_tokens: 0, output_tokens: 0, cache_read_tokens: 0 }), agyCtx), []);
+  assert.deepEqual(parseAgyTranscript(step({ type: 'GENERIC' }), agyCtx), []);
+  assert.deepEqual(parseAgyTranscript(step({ created_at: '1999-01-01T00:00:00Z' }), agyCtx), [], 'a timestamp before 2020 is bad data');
+});
+
+test('antigravity keeps its state across pushes so a later rewrite of a step replaces its row', () => {
+  const before = JSON.stringify({ step_index: 4, source: 'MODEL', type: 'PLANNER_RESPONSE', status: 'DONE', created_at: '2026-11-26T03:00:00Z', model: 'gemini-4-neon-high', input_tokens: 10, output_tokens: 5 });
+  const after = JSON.stringify({ step_index: 4, source: 'MODEL', type: 'PLANNER_RESPONSE', status: 'DONE', created_at: '2026-11-26T03:00:00Z', model: 'gemini-4-neon-high', input_tokens: 10, output_tokens: 7 });
+  const parser = createAgyParser(agyCtx);
+  parser.push(`${before}
+`);
+  assert.equal(parser.table().length, 1);
+  const resumed = createAgyParser(agyCtx, JSON.parse(JSON.stringify(parser.state())));
+  resumed.push(`${after}
+`);
+  assert.equal(resumed.table().length, 1);
+  assert.equal(resumed.records()[0].output, 7);
+});
+
+test('antigravity without a cwd falls back to the context project and an empty cwd', () => {
+  const [record] = parseAgyTranscript(agyText, { sessionId: 's', project: 'ctx-project' });
+  assert.equal(record.project, 'ctx-project');
+  assert.equal(record.cwd, '');
+});
+
+test('agyModelId keeps an id as written and turns a display name into the id form', () => {
+  assert.equal(agyModelId('gemini-4-neon-high'), 'gemini-4-neon-high');
+  assert.equal(agyModelId('Gemini 3.8 Flash (High)'), 'gemini-3.8-flash-high');
+  assert.equal(agyModelId('Claude Opus 4.6 (Thinking)'), 'claude-opus-4.6-thinking');
+  assert.equal(agyModelId('  '), null);
+});
 
 test('pi tool results, user turns and a broken line never become usage', () => {
   const toolLine = piLines.find((line) => line.includes('toolResult'));

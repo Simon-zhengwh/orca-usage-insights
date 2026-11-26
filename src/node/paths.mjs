@@ -34,12 +34,19 @@ export async function rootSpecs({
 } = {}) {
   const p = pathFor(platform);
   const base = homeDir({ platform, env, home });
+  // Antigravity shares ~/.gemini; GEMINI_HOME moves the whole tree, as agy's own --gemini_dir does.
+  const gemini = nonEmpty(env.GEMINI_HOME) ?? p.join(base, '.gemini');
   const specs = [
     { path: p.join(base, '.claude'), kind: 'claude', source: 'default' },
     { path: p.join(nonEmpty(env.XDG_CONFIG_HOME) ?? p.join(base, '.config'), 'claude'), kind: 'claude', source: 'default' },
     { path: p.join(base, '.codex'), kind: 'codex', source: 'default' },
     // Pi keeps its sessions under the agent dir (PI_CODING_AGENT_DIR), which is ~/.pi/agent by default.
     { path: p.join(base, '.pi', 'agent'), kind: 'pi', source: 'default' },
+    // Antigravity writes one brain/ tree per surface under ~/.gemini: the agy CLI, the desktop/IDE
+    // app and the ACP server. A missing one is simply an empty root.
+    { path: p.join(gemini, 'antigravity-cli'), kind: 'antigravity', source: 'default' },
+    { path: p.join(gemini, 'antigravity'), kind: 'antigravity', source: 'default' },
+    { path: p.join(gemini, 'antigravity-acp'), kind: 'antigravity', source: 'default' },
     ...splitList(env.CLAUDE_CONFIG_DIR).map((path) => ({ path, kind: 'claude', source: 'environment' })),
     ...(nonEmpty(env.CODEX_HOME) ? [{ path: nonEmpty(env.CODEX_HOME), kind: 'codex', source: 'environment' }] : []),
     ...(nonEmpty(env.PI_CODING_AGENT_DIR) ? [{ path: nonEmpty(env.PI_CODING_AGENT_DIR), kind: 'pi', source: 'environment' }] : []),
@@ -81,6 +88,7 @@ export async function resolveRoots(options = {}) {
     claude: await existingRoots(specs.filter((s) => s.kind === 'claude').map((s) => s.path), platform, realpath),
     codex: await existingRoots(specs.filter((s) => s.kind === 'codex').map((s) => s.path), platform, realpath),
     pi: await existingRoots(specs.filter((s) => s.kind === 'pi').map((s) => s.path), platform, realpath),
+    antigravity: await existingRoots(specs.filter((s) => s.kind === 'antigravity').map((s) => s.path), platform, realpath),
   };
 }
 

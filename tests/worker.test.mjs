@@ -504,7 +504,13 @@ test('settings folders are trimmed, ~ expands, comments and blanks drop, relativ
   await mock.handlers.get('usage.report')({});
   await mock.handlers.get('usage.report')({});
   const last = scanner.calls.roots.at(-1);
-  assert.deepEqual(last, { claude: [path.join(home, 'backup', '.claude'), abs], codex: [home], pi: [], disabled: [] });
+  assert.deepEqual(last, {
+    claude: [path.join(home, 'backup', '.claude'), abs],
+    codex: [home],
+    pi: [],
+    antigravity: [],
+    disabled: [],
+  });
   assert.equal(mock.logs.filter((line) => /relative\/dir/.test(line)).length, 1, 'logged once across scans');
   await worker.stop();
 });
@@ -557,7 +563,7 @@ test('a failed settings read logs once, scans with no folders or hosts, and neve
   const first = await mock.handlers.get('usage.report')({});
   await mock.handlers.get('usage.report')({});
   assert.equal(mock.logs.filter((line) => /could not read settings/.test(line)).length, 1);
-  assert.deepEqual(scanner.calls.roots.at(-1), { claude: [], codex: [], pi: [], disabled: [] });
+  assert.deepEqual(scanner.calls.roots.at(-1), { claude: [], codex: [], pi: [], antigravity: [], disabled: [] });
   assert.equal(ssh.info.size, 0);
   assert.deepEqual(first.sources.map((s) => s.id), ['local']);
   mock.failSettings = false;
@@ -880,8 +886,8 @@ test('activate scans the real roots and deactivate flushes the cache under the c
     await deactivate();
   }
 
-  const cache = JSON.parse(await fsp.readFile(path.join(cacheDir(), 'scan-cache-v7.json'), 'utf8'));
-  assert.equal(cache.version, 7);
+  const cache = JSON.parse(await fsp.readFile(path.join(cacheDir(), 'scan-cache-v8.json'), 'utf8'));
+  assert.equal(cache.version, 8);
   assert.equal(Object.keys(cache.files).length, 1);
 });
 

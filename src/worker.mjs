@@ -22,8 +22,8 @@ import { createScanner } from './node/scan.mjs';
 import { createSshSource } from './node/ssh-source.mjs';
 
 const SCOPES = new Set(['all', 'worktrees']);
-const CACHE_FILE = 'scan-cache-v7.json';
-const LEGACY_CACHE_FILES = ['scan-cache-v6.json', 'scan-cache-v5.json', 'scan-cache-v4.json'];
+const CACHE_FILE = 'scan-cache-v8.json';
+const LEGACY_CACHE_FILES = ['scan-cache-v7.json', 'scan-cache-v6.json', 'scan-cache-v5.json', 'scan-cache-v4.json'];
 const POLL_MS = 60_000;
 // The panel waits this long at most for SSH hosts. A host still running then is reported as loading.
 const SSH_WAIT_MS = 1_500;
@@ -114,7 +114,7 @@ export function startWorker(orca, scanner, {
   let pending = null;
   const inFlight = new Set();
 
-  let lastExtra = { claude: [], codex: [], pi: [], disabled: [] };
+  let lastExtra = { claude: [], codex: [], pi: [], antigravity: [], disabled: [] };
   let digestScanner = null;
   let digestJob = null;
   let lastDigests = null;
@@ -376,6 +376,7 @@ export function startWorker(orca, scanner, {
       claude: folderList(settings?.extraClaudeFolders, '额外 Claude Code 文件夹'),
       codex: folderList(settings?.extraCodexFolders, '额外 Codex 文件夹'),
       pi: folderList(settings?.extraPiFolders, '额外 Pi 文件夹'),
+      antigravity: folderList(settings?.extraAntigravityFolders, '额外 Antigravity 文件夹'),
       hosts: sshEntries(settingLines(settings?.sshHosts)),
       disabled: [...new Set(settingLines(settings?.disabledFolders).map((line) => expandHome(line, { platform, home })))],
     };
@@ -505,7 +506,7 @@ export function startWorker(orca, scanner, {
   // status bar poll (detach) never waits for SSH.
   async function gather({ force, detach, forceLocal = force }) {
     const config = await readConfig();
-    lastExtra = { claude: config.claude, codex: config.codex, pi: config.pi, disabled: config.disabled };
+    lastExtra = { claude: config.claude, codex: config.codex, pi: config.pi, antigravity: config.antigravity, disabled: config.disabled };
     scanner.setExtraRoots(lastExtra);
     reconcile(config.hosts);
     const hosts = [...sources];
