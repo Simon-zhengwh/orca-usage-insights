@@ -170,6 +170,29 @@ test('more rows are appended with the next offset and the button says how many a
   assert.equal(get('log-more').hidden, false)
 })
 
+test('the log model picker lists the models of the window, narrows the requests and returns to all of them', async () => {
+  const { calls, get, click, settle } = await mountPanel()
+  click('view', { view: 'log' })
+  await settle()
+  const select = get('log-model')
+  assert.match(select.innerHTML, /全部模型/)
+  assert.match(select.innerHTML, /deepseek-v4\.1-flash/)
+  assert.equal(select.value, '', 'everything is shown at first')
+
+  select.listeners.change({ target: { value: 'deepseek-v4.1-flash' } })
+  await settle()
+  const asked = calls.filter((c) => c.name === 'usage.log').at(-1).input
+  assert.deepEqual(asked.models, ['deepseek-v4.1-flash'])
+  assert.equal(asked.offset, 0)
+  assert.match(get('log-sub').textContent, /只看 deepseek-v4\.1-flash/)
+
+  // Going back to every model drops the filter again.
+  select.listeners.change({ target: { value: '' } })
+  await settle()
+  assert.equal('models' in calls.filter((c) => c.name === 'usage.log').at(-1).input, false)
+  assert.equal(get('log-sub').textContent.includes('只看'), false)
+});
+
 test('one local day turns the hour chart into that day and narrows the requests', async () => {
   const { calls, get, click, settle } = await mountPanel()
   click('ranges', { range: 'custom' })
@@ -236,6 +259,7 @@ function sampleLog({ offset = 0, limit = 100 } = {}) {
   const hourly = Array.from({ length: 24 }, (_, hour) => ({ hour, requests: hour === 20 ? 2 : 0, input: hour === 20 ? 2000 : 0, output: hour === 20 ? 1000 : 0, cacheRead: 0, cacheWrite: 0, tokens: hour === 20 ? 3000 : 0, uncached: hour === 20 ? 3000 : 0, costUsd: hour === 20 ? 1 : 0, output_: 0, durationMs: hour === 20 ? 2000 : 0, timed: hour === 20 ? 2 : 0, tokPerSec: hour === 20 ? 50 : null }))
   return {
     day: null, offset, limit, total: 12,
+    models: ['claude-opus-5-5', 'deepseek-v4.1-flash'],
     rows: rows.slice(offset, offset + limit),
     hourly,
     totals: { requests: 12, tokens: 36000, uncached: 12000, output: 6000, usd: 6, timed: 2, tokPerSec: 50 },

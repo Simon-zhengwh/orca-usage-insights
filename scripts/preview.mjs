@@ -51,14 +51,19 @@ for (const range of ['1d', '7d', '30d', '90d', 'all']) {
 }
 // One full page per range, sliced by the shim, so 明细 and 加载更多 both work offline.
 const logs = {}
-for (const range of ['1d', '7d', '30d', '90d', 'all']) logs[range] = await handlers.get('usage.log')({ range, limit: 500 }, {})
+for (const range of ['1d', '7d', '30d', '90d', 'all']) { logs[range] = await handlers.get('usage.log')({ range, limit: 500 }, {})
+  // The log's model picker asks again with one model, so its pages are prefetched too.
+  for (const model of logs[range].models) {
+    logs[`${range}|${model}`] = await handlers.get('usage.log')({ range, limit: 500, models: [model] }, {})
+  }
+}
 const prices = await handlers.get('prices.status')(undefined, {})
 const sync = args.includes('--sync') ? await handlers.get('prices.sync')(undefined, {}) : null
 await worker.stop()
 const shim = `<script>window.__USAGE_PREVIEW__ = (() => { const R = ${JSON.stringify(reports)}; const G = ${JSON.stringify(logs)}; const V = ${JSON.stringify(views)}; const E = ${JSON.stringify(explains)}; const P = ${JSON.stringify(prices)}; const S = ${JSON.stringify(sync)}; return async (name, input = {}) => {
   if (name === 'prices.status') return P
   if (name === 'prices.sync' && S) return S
-  if (name === 'usage.log') { const page = G[input.range] || G['7d']; const offset = input.offset || 0; const limit = input.limit || 100; return { ...page, offset, limit, rows: page.rows.slice(offset, offset + limit) } }
+  if (name === 'usage.log') { const page = G[(input.models && input.models.length === 1 ? input.range + '|' + input.models[0] : input.range)] || G[input.range] || G['7d']; const offset = input.offset || 0; const limit = input.limit || 100; return { ...page, offset, limit, rows: page.rows.slice(offset, offset + limit) } }
   if (name === 'usage.explain') return E[input.findingId] || { prompt: 'Not captured in this preview.', estTokens: 0 }
   if (name === 'usage.breakdown') return V[JSON.stringify([input.range, input.path || []])] || V[JSON.stringify([input.range, []])]
   if (name.startsWith('prices.')) throw new Error('Not available in the preview')

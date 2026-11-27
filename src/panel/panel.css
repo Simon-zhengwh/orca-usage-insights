@@ -275,6 +275,9 @@ table.bd { width: 100%; border-collapse: collapse; font-variant-numeric: tabular
 #log-table td.speed { font-variant-numeric: tabular-nums; }
 #log-speed .chart { margin-top: 4px; }
 .log-foot { display: flex; align-items: center; gap: 10px; }
+.log-tools { display: flex; align-items: center; gap: 8px; }
+.log-pick select { max-width: 220px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--fg); font: inherit; font-size: 12px; padding: 4px 6px; min-width: 0; }
+
 .log-foot .btn[hidden] { display: none; }
 
 /* --- 1.2.0: Breakdown view, price line, dialogs --- */

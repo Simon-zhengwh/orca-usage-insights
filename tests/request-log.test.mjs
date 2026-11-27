@@ -58,6 +58,21 @@ test('no measured request means no total throughput rather than a zero', () => {
   assert.equal(view.totals.timed, 0);
 });
 
+test('models lists every model of the window even while one is selected', () => {
+  const records = [
+    rec(0, 10, { model: 'claude-opus-5-5', input: 10, output: 2 }),
+    rec(0, 11, { model: 'gemini-4-neon-high', input: 20, output: 3 }),
+    rec(0, 12, { model: 'deepseek-flash', input: 30, output: 4 }),
+  ];
+  const all = buildRequestLog(records, { now: NOW, range: '1d' });
+  assert.deepEqual(all.models, ['claude-opus-5-5', 'deepseek-flash', 'gemini-4-neon-high']);
+  assert.equal(all.total, 3);
+  const one = buildRequestLog(records, { now: NOW, range: '1d', models: ['deepseek-flash'] });
+  assert.deepEqual(one.models, all.models, 'the picker still offers the others');
+  assert.equal(one.total, 1);
+  assert.equal(one.rows[0].model, 'deepseek-flash');
+});
+
 test('totals carry each token kind, so the hour legend and the strip can label them', () => {
   const view = log([
     rec(0, 9, { input: 10, output: 40, cacheRead: 100, cacheWrite: 5 }),

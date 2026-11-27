@@ -6,7 +6,7 @@ import { normalizeQuery, localDay, dayKey, MIN_USAGE_DATE, RANGE_DAYS } from '..
 
 const $ = (id) => document.getElementById(id)
 const host = globalThis.orca
-const state = { view: 'usage', range: '7d', defaultRange: '7d', rangePicked: false, startDate: '', endDate: '', models: null, modelSearch: '', provider: 'all', host: 'all', scope: 'all', cache: true, metric: 'tokens', breakdown: 'model', sort: 'default', report: null, busy: false, bd: null, bdPath: [], log: null, logBusy: false, logAgain: false, prices: null, sync: null }
+const state = { view: 'usage', range: '7d', defaultRange: '7d', rangePicked: false, startDate: '', endDate: '', models: null, modelSearch: '', provider: 'all', host: 'all', scope: 'all', cache: true, metric: 'tokens', breakdown: 'model', sort: 'default', report: null, busy: false, bd: null, bdPath: [], log: null, logBusy: false, logAgain: false, logModel: '', prices: null, sync: null }
 const NOTE_KEY = 'usage-insights.prices-note.1.2.0'
 const LOG_PAGE = 100
 
@@ -613,7 +613,9 @@ async function loadLog({ more = false } = {}) {
     $('log-table').innerHTML = ''
   }
   try {
-    const page = await request('usage.log', { ...filterInput({ usage: true }), offset, limit: LOG_PAGE })
+    const input = filterInput({ usage: true })
+    // The picker in the log narrows the log alone; the panel's own model filter is applied above it.
+    const page = await request('usage.log', { ...input, ...(state.logModel ? { models: [state.logModel] } : {}), offset, limit: LOG_PAGE })
     state.log = more && state.log ? { ...page, offset: 0, rows: [...state.log.rows, ...page.rows] } : page
     renderLogView()
     $('live').textContent = `已读取 ${state.log.rows.length.toLocaleString()} 笔请求，共 ${state.log.total.toLocaleString()} 笔。`
@@ -630,6 +632,19 @@ async function loadLog({ more = false } = {}) {
   }
 }
 
+// The model picker of the log: every model in the window, plus whatever is selected right now, so a
+// selection that no longer appears (another date range) still shows as itself instead of blank.
+function renderLogModels(page) {
+  const select = $('log-model')
+  if (!select) return
+  const models = [...new Set([...(page.models || []), ...(state.logModel ? [state.logModel] : [])])].sort()
+  const options = [`<option value="">全部模型</option>`]
+    .concat(models.map((model) => `<option value="${esc(model)}">${esc(model)}</option>`))
+  select.innerHTML = options.join('')
+  select.value = state.logModel
+  select.disabled = models.length === 0 && !state.logModel
+}
+
 function renderLogView() {
   const page = state.log
   if (!page) return
@@ -639,6 +654,7 @@ function renderLogView() {
     $('log-status').textContent = '当所选日期与筛选下没有请求记录。换个时间范围，或重置筛选。'
     $('log-status').classList.remove('error')
   }
+  renderLogModels(page)
   const keys = state.cache ? TOKEN_KEYS : ['input', 'output']
   const width = () => Math.max(280, Math.round($('log-hour').clientWidth || 0))
   const oneDay = state.range === 'custom' && state.startDate !== '' && state.startDate === state.endDate
@@ -666,7 +682,8 @@ function renderLogView() {
   $('log-table').innerHTML = head + `<tbody>${rows || '<tr><td colspan="8" class="muted" style="text-align:center">当所选日期与筛选下没有请求记录。</td></tr>'}</tbody>`
 
   const shown = page.rows.length
-  $('log-sub').textContent = `${shown.toLocaleString('en-US')} / ${page.total.toLocaleString('en-US')} 笔（最新在前）· 时间按本机时区 · 吞吐只算有耗时的请求`
+  const picked = state.logModel ? ` · 只看 ${state.logModel}` : ''
+  $('log-sub').textContent = `${shown.toLocaleString('en-US')} / ${page.total.toLocaleString('en-US')} 笔（最新在前）· 时间按本机时区 · 吞吐只算有耗时的请求${picked}`
   $('log-count').textContent = page.total ? `${shown.toLocaleString('en-US')} / ${page.total.toLocaleString('en-US')}` : ''
   const more = shown < page.total
   $('log-more').hidden = !more
@@ -831,6 +848,13 @@ function bindBreakdown() {
   })
   $('bd-stale').addEventListener('click', () => load())
   $('log-more').addEventListener('click', () => loadLog({ more: true }))
+  $('log-model').addEventListener('change', (e) => {
+    const next = e.target.value || ''
+    if (next === state.logModel) return
+    state.logModel = next
+    state.log = null // a new pick starts again at the newest request
+    loadLog()
+  })
   $('prices').addEventListener('click', (e) => {
     const b = e.target.closest('button[data-price]')
     if (b) priceAction(b.dataset.price)

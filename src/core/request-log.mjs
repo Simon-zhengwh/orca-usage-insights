@@ -1,6 +1,6 @@
 // Use case: usage records -> one page of individual requests plus an hour-of-day rollup. Pure: no Node
 // built-in or Orca imports. The panel asks for more pages as you scroll, so this sorts once per query and
-// hands back a slice. `durationMs` is only known where the transcript recorded it (Pi), so a throughput
+// hands back a slice. `durationMs` is only known where the transcript recorded it (Pi, Antigravity), so a
 // is reported for those requests and left out for the rest.
 
 import { selectRecords } from './filters.mjs';
@@ -21,7 +21,7 @@ export function buildRequestLog(records, { now = new Date(), providers, hosts, s
   const start = clamp(offset, 0, Number.MAX_SAFE_INTEGER);
   const size = clamp(limit, 1, LOG_LIMIT_MAX);
   const selected = selectRecords(records, { ...query, now, providers, hosts, scope });
-  const { table, rows, days, count, startDay, endDay, hostNames } = selected;
+  const { table, rows, days, count, startDay, endDay, hostNames, allModels } = selected;
   const { costs } = tableCosts(table, catalog);
   const toLocal = localClock();
   // With cache turned off the log counts only the tokens you were billed for; the columns stay raw.
@@ -120,6 +120,9 @@ export function buildRequestLog(records, { now = new Date(), providers, hosts, s
     offset: start,
     limit: size,
     total: matched.length,
+    // Every model in the window, so a caller can offer a model picker. selectRecords collects these
+    // before the models query narrows the rows, so the list stays complete while one is selected.
+    models: [...allModels].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
     rows: out,
     hourly: hourlyOut,
     totals: {
