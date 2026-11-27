@@ -107,6 +107,17 @@ test('antigravity skips steps that are running, carry no counters or are not mod
   assert.deepEqual(parseAgyTranscript(step({ created_at: '1999-01-01T00:00:00Z' }), agyCtx), [], 'a timestamp before 2020 is bad data');
 });
 
+test('antigravity takes a step duration from the context, and leaves a step without one unmeasured', () => {
+  const records = parseAgyTranscript(agyText, { ...agyCtx, timings: [[1, 14016], [3, 3000]] });
+  assert.deepEqual(records.map((r) => r.durationMs), [14016, 3000, undefined]);
+  assert.equal('durationMs' in records[2], false, 'step 5 was never timed');
+  const speeds = records.filter((r) => r.durationMs).map((r) => Math.round(r.output / (r.durationMs / 1000) * 10) / 10);
+  assert.deepEqual(speeds, [64.3, 179.7]);
+  // A zero or negative duration from the caller is not a measurement either.
+  const [zero] = parseAgyTranscript(agyText, { ...agyCtx, timings: [[1, 0]] });
+  assert.equal('durationMs' in zero, false);
+});
+
 test('antigravity keeps its state across pushes so a later rewrite of a step replaces its row', () => {
   const before = JSON.stringify({ step_index: 4, source: 'MODEL', type: 'PLANNER_RESPONSE', status: 'DONE', created_at: '2026-11-26T03:00:00Z', model: 'gemini-4-neon-high', input_tokens: 10, output_tokens: 5 });
   const after = JSON.stringify({ step_index: 4, source: 'MODEL', type: 'PLANNER_RESPONSE', status: 'DONE', created_at: '2026-11-26T03:00:00Z', model: 'gemini-4-neon-high', input_tokens: 10, output_tokens: 7 });

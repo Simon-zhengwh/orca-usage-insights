@@ -10,6 +10,7 @@ import { NameDict } from '../core/table.mjs';
 import { PROVIDERS } from '../core/providers.mjs';
 import { MARKER_BYTES, createRecordsConsumer, markedLines } from './lines.mjs';
 import { readAgyCwds } from './agy-index.mjs';
+import { createAgyNative } from './agy-native.mjs';
 import { createOpencodeSource } from './opencode-source.mjs';
 import { createParsePool } from './parse-pool.mjs';
 import { pathFor, rootSpecs } from './paths.mjs';
@@ -60,6 +61,8 @@ export function createScanner({
   let store = createRecordStore({ names });
   // OpenCode databases are a second kind of source; their tables intern into the same dictionary.
   const opencode = createOpencodeSource({ platform, env, home, fs, names, cacheFile: opencodeCacheFile });
+  // Antigravity records each call's duration in the conversation database next to its transcript.
+  const agyNative = createAgyNative({ fs, platform });
   let extra = { claude: [], codex: [], pi: [], disabled: [] }; // folders from settings, see setExtraRoots
   let extraKey = '[[],[],[],[]]';
   let rootsGen = 0;
@@ -161,6 +164,12 @@ export function createScanner({
         if (file.kind !== 'antigravity') continue;
         const cwd = cwds.get(file.ctx.sessionId);
         if (cwd) file.ctx = { ...file.ctx, cwd, project: lastSegmentOf(cwd) };
+        // The transcript's own timestamps are whole seconds, so a call's duration comes from the
+        // conversation database. Its fingerprint goes on the file: when it moves, the transcript is
+        // read again so a call that finished after the last scan gets its speed.
+        const native = await agyNative.durationsFor(file.path);
+        file.timingsKey = native.key;
+        if (native.pairs.length > 0) file.ctx = { ...file.ctx, timings: native.pairs };
       }
     }
     // Largest files first (a .zst byte costs several plain ones), so no big file starts last while threads idle.
@@ -247,7 +256,15 @@ export function createScanner({
     const entry = run.map.get(file.path);
     // A file replaced under the same name (a new inode) is read whole, even with the same mtime and size.
     const sameFile = !entry?.fileId || !file.fileId || entry.fileId === file.fileId;
-    const prior = entry?.kind === file.kind && sameFile && ensureParser(entry) ? entry : undefined;
+    // A moved Antigravity database means a scan sees durations the transcript alone cannot carry, so
+    // that file is read whole again instead of being tailed.
+    const sameTimings = (entry?.timingsKey ?? null) === (file.timingsKey ?? null);
+    const prior = entry?.kind === file.kind && sameFile && sameTimings && ensureParser(entry) ? entry : undefined;
+    if (entry && !sameTimings) {
+      entry.timingsKey = file.timingsKey ?? null;
+      touched.add(file.path);
+      dirty = true;
+    }
     if (entry && file.fileId && entry.fileId !== file.fileId && sameFile) {
       entry.fileId = file.fileId;
       touched.add(file.path);
@@ -483,11 +500,28 @@ function nextGen(previous) {
 }
 
 function fromCache(entry) {
-  return { key: entry.key, offset: entry.offset, kind: entry.kind, ctx: entry.ctx, fileId: typeof entry.fileId === 'string' ? entry.fileId : null, state: entry.state, parser: null };
+  return {
+    key: entry.key,
+    offset: entry.offset,
+    kind: entry.kind,
+    ctx: entry.ctx,
+    fileId: typeof entry.fileId === 'string' ? entry.fileId : null,
+    timingsKey: typeof entry.timingsKey === 'string' ? entry.timingsKey : null,
+    state: entry.state,
+    parser: null,
+  };
 }
 
 function toCache(entry) {
-  return { key: entry.key, offset: entry.offset, kind: entry.kind, ctx: entry.ctx, fileId: entry.fileId ?? null, state: entry.parser ? entry.parser.state() : entry.state };
+  return {
+    key: entry.key,
+    offset: entry.offset,
+    kind: entry.kind,
+    ctx: entry.ctx,
+    fileId: entry.fileId ?? null,
+    ...(entry.timingsKey ? { timingsKey: entry.timingsKey } : {}),
+    state: entry.parser ? entry.parser.state() : entry.state,
+  };
 }
 
 function listOfStrings(value) {

@@ -653,7 +653,7 @@ function renderLogView() {
   $('log-hour').innerHTML = hourBars(hours, { keys, width: width(), height: 160 })
   $('log-hour-legend').innerHTML = keys.map((k) => legendItem(TOKEN_COLORS[k], TOKEN_LABELS[k], compact(t[k] ?? 0))).join('')
   const withSpeed = hours.some((h) => h.tokPerSec != null)
-  $('log-speed').innerHTML = withSpeed ? speedTrend(hours, { width: width(), height: 104 }) : '<p class="muted small">没有可用的吞吐数据：只有记录了每次请求耗时的转录（目前是 Pi）才有吞吐，其余来源只计 Token。</p>'
+  $('log-speed').innerHTML = withSpeed ? speedTrend(hours, { width: width(), height: 104 }) : '<p class="muted small">没有可用的吞吐数据：只有记录了每次请求耗时的来源（目前是 Pi 和 Antigravity）才有吞吐，其余来源只计 Token。</p>'
 
   const exact = (n) => Number(n || 0).toLocaleString('en-US')
   const head = '<thead><tr><th>时间</th><th>模型</th><th>项目</th><th>输入</th><th>输出</th><th>缓存读</th><th>成本</th><th>Token/秒</th></tr></thead>'

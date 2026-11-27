@@ -925,6 +925,50 @@ test('an Antigravity brain session is read once: transcript.jsonl only, with its
   assert.deepEqual(again.records.toRecords().filter((r) => r.provider === 'antigravity'), agy);
 });
 
+test('an Antigravity call gets its duration from the conversation database, and a late generation appears after a re-read', async (t) => {
+  const fx = await fixture(t);
+  const gemini = path.join(fx.base, 'gemini');
+  const logs = path.join(gemini, 'antigravity-cli', 'brain', 'agy-sess-t', '.system_generated', 'logs');
+  await fsp.mkdir(logs, { recursive: true });
+  const step = (index, output) => `${JSON.stringify({
+    step_index: index,
+    source: 'MODEL',
+    type: 'PLANNER_RESPONSE',
+    status: 'DONE',
+    created_at: '2026-11-26T03:08:36Z',
+    model: 'gemini-4-neon-high',
+    input_tokens: 1000,
+    cache_read_tokens: 0,
+    output_tokens: output,
+  })}
+`;
+  await fsp.writeFile(path.join(logs, 'transcript.jsonl'), step(1, 893) + step(5, 500));
+  const transcript = path.join(logs, 'transcript.jsonl');
+  const dbPath = path.join(gemini, 'antigravity-cli', 'conversations', 'agy-sess-t.db');
+  // Step 1 has a generation with timing; step 5's generation is not written yet.
+  await writeAgyDb(dbPath, [[1, 0], [5, 1]], [[0, [5223, 8793]]]);
+
+  const scanner = createScanner({ env: { ...fx.env, GEMINI_HOME: gemini }, home: fx.base, threads: 0 });
+  const result = await scanner.scan();
+  const agy = result.records.toRecords().filter((r) => r.provider === 'antigravity');
+  assert.deepEqual(agy.map((r) => r.durationMs), [14016, undefined]);
+  assert.equal(Math.round(agy[0].output / (agy[0].durationMs / 1000) * 10) / 10, 63.7);
+
+  // The second generation finishes, which moves the database but not the transcript.
+  const status = (await fsp.stat(transcript)).mtimeMs;
+  await writeAgyDb(dbPath, [[1, 0], [5, 1]], [[0, [5223, 8793]], [1, [1000, 4000]]]);
+  const next = await scanner.scan({ force: true });
+  const after = next.records.toRecords().filter((r) => r.provider === 'antigravity');
+  assert.deepEqual(after.map((r) => r.durationMs), [14016, 5000], 'the moved database is read again');
+  assert.equal((await fsp.stat(transcript)).mtimeMs, status, 'the transcript itself did not change');
+
+  // A restart keeps both durations: they are part of the cached table.
+  await scanner.flush();
+  const restarted = createScanner({ env: { ...fx.env, GEMINI_HOME: gemini }, home: fx.base, threads: 0 });
+  const reloaded = (await restarted.scan()).records.toRecords().filter((r) => r.provider === 'antigravity');
+  assert.deepEqual(reloaded.map((r) => r.durationMs), [14016, 5000]);
+});
+
 test('an extra Claude folder that holds projects is read through projects only, like a default root', async (t) => {
   const fx = await fixture(t);
   const backup = path.join(fx.base, 'backup-claude');
@@ -1293,6 +1337,38 @@ function sqliteAvailable() {
   } catch {
     return false;
   }
+}
+
+function agyVarint(value) {
+  const out = [];
+  let v = value;
+  while (v > 0x7f) {
+    out.push((v & 0x7f) | 0x80);
+    v = Math.floor(v / 128);
+  }
+  out.push(v);
+  return Buffer.from(out);
+}
+
+async function writeAgyDb(file, steps, generations) {
+  const bytes = (number, value) => Buffer.concat([agyVarint(number * 8 + 2), agyVarint(value.length), Buffer.from(value)]);
+  const numberField = (fieldNumber, value) => Buffer.concat([agyVarint(fieldNumber * 8), agyVarint(value)]);
+  const duration = (ms) => Buffer.concat([numberField(1, Math.floor(ms / 1000)), numberField(2, (ms % 1000) * 1e6)]);
+  const { DatabaseSync } = await import('node:sqlite');
+  await fsp.mkdir(path.dirname(file), { recursive: true });
+  await fsp.rm(file, { force: true });
+  const db = new DatabaseSync(file);
+  db.exec('CREATE TABLE steps (idx INTEGER, step_type INTEGER, metadata BLOB)');
+  db.exec('CREATE TABLE gen_metadata (idx INTEGER, data BLOB)');
+  const insertStep = db.prepare('INSERT INTO steps VALUES (?, 15, ?)');
+  for (const [index, generation] of steps) {
+    insertStep.run(index, bytes(20, generation === 0 ? Buffer.alloc(0) : numberField(3, generation)));
+  }
+  const insertGen = db.prepare('INSERT INTO gen_metadata VALUES (?, ?)');
+  for (const [index, [first, stream]] of generations) {
+    insertGen.run(index, bytes(1, Buffer.concat([bytes(11, duration(first)), bytes(12, duration(stream))])));
+  }
+  db.close();
 }
 
 async function writeIndex(file, rows) {

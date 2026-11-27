@@ -52,8 +52,11 @@ export function parseAgyTranscript(text, ctx) {
 // and nothing is written to the cache separately. A step keeps its index when the export rewrites it,
 // so the last line for an index wins. The file has no cwd: the caller passes one from the index.
 export function createAgyParser(ctx, state, { names } = {}) {
-  const { sessionId = '', project = '', cwd: ctxCwd = '' } = ctx ?? {};
+  const { sessionId = '', project = '', cwd: ctxCwd = '', timings } = ctx ?? {};
   const host = ctx?.host ?? 'local';
+  // [step, durationMs] pairs from the conversation database. They stay plain arrays in the context
+  // because it is cached and sent to a parse thread; a Map is built once here.
+  const durationOfStep = timingMap(timings);
   const session = nonEmptyString(state?.session) ?? sessionId;
   const currentCwd = typeof state?.cwd === 'string' ? state.cwd : ctxCwd;
   // The transcript names no project: it is the last segment of the cwd the conversation index gave.
@@ -79,7 +82,7 @@ export function createAgyParser(ctx, state, { names } = {}) {
     const { input, output, cacheRead } = agyUsage(obj);
     if (input === 0 && output === 0 && cacheRead === 0) return;
     const recordModel = agyModelId(obj.model) ?? nonEmptyString(model) ?? 'unknown';
-    const row = [ms, 'antigravity', recordModel, currentProject, session, currentCwd, host, input, output, cacheRead, 0, 0];
+    const row = [ms, 'antigravity', recordModel, currentProject, session, currentCwd, host, input, output, cacheRead, 0, 0, durationOf(durationOfStep.get(step))];
     const key = `antigravity:${session}:${step}`;
     if (rowOf === null) rowOf = keyRows(table);
     const at = rowOf.get(key);
@@ -397,6 +400,17 @@ export function agyModelId(value) {
   if (!name) return null;
   if (!name.includes(' ')) return name;
   return name.toLowerCase().replace(' (', '-').replaceAll('(', '').replaceAll(')', '').split(/\s+/).filter(Boolean).join('-');
+}
+
+// A step -> duration lookup from the pairs a caller read out of Antigravity's conversation database.
+function timingMap(pairs) {
+  const map = new Map();
+  if (Array.isArray(pairs)) {
+    for (const pair of pairs) {
+      if (Array.isArray(pair) && pair.length === 2 && Number.isSafeInteger(pair[0])) map.set(pair[0], pair[1]);
+    }
+  }
+  return map;
 }
 
 // The model a session switched to, from a user turn that reports `Model Selection ... to <name>`.
